@@ -1,21 +1,13 @@
 package requests
 
-type CreateResourceRequest struct {
-	EmailAddress string `json:"email_address"`
-	Password     string `json:"password"`
-}
-
-func StoreUserRequest() map[string]interface{} {
-	//packageType := reflect.TypeOf(fmt.Printf).PkgPath()
-	//pkg, _ := reflect.Import(StoreUserRequest)
-	//fmt.Println(pkg)
-	return map[string]interface{}{
-		"data": map[string]interface{}{
-			"type": "in:users|required|string",
-			"attributes": map[string]interface{}{
-				"email_address": "min:8|max:255|required|string",
-				"password":      "min:8|max:255|required|string",
-			},
-		},
-	}
+type StoreUserRequest struct {
+	Data struct {
+		Type       string `json:"type"`
+		Attributes struct {
+			EmailAddress string `json:"email_address" validate:"email|max=255|required"`
+			FullName     string `json:"full_name" validate:"max=255|required"`
+			Password     string `json:"password" validate:"max=255|required"`
+			RedirectURL  string `json:"redirect_url" validate:"max=255|required"`
+		} `json:"attributes"`
+	} `json:"data"`
 }
