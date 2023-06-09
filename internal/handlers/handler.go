@@ -15,7 +15,7 @@ func Handlers(mux *chi.Mux) {
 	}
 
 	handler.Use(middlewares.FormRequestCall)
-	handler.Get("/", Login)
+	handler.Get("/login", Login)
 	handler.Route("/api/login", func(r chi.Router) {
 	})
 }

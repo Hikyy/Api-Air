@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"fmt"
 )
 
 func Login(writer http.ResponseWriter, request *http.Request) {
@@ -21,9 +22,12 @@ func Login(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err)
 	}
 
+	fmt.Printf("It's %s\n", body)
+
 	value := reflect.ValueOf(user)
 	printFieldKeysAndValues(value)
 }
+
 
 func printFieldKeysAndValues(value reflect.Value) {
 	request := value.Type()
