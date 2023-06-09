@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"App/internal/requests"
-	"encoding/json"
+	// "encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -18,9 +18,9 @@ func Login(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err)
 	}
 
-	if err = json.Unmarshal(body, &user); err != nil {
-		log.Fatal(err)
-	}
+	// if err = json.Unmarshal(body, &user); err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	fmt.Printf("It's %s\n", body)
 

@@ -6,4 +6,6 @@ WORKDIR /go_app
 
 COPY . .
 
+RUN echo " !! À chaque modifications pour run le programme : go run main.go !!"
+
 CMD go run ./app
