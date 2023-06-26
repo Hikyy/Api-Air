@@ -28,6 +28,13 @@ func Login(writer http.ResponseWriter, request *http.Request) {
 	printFieldKeysAndValues(value)
 }
 
+func Register(w http.ResponseWriter, r *http.Request){
+	r.Header().Set("Content-Type", "application/json")
+	
+	var user User json.NewDecoder(r.Body).Decode(&user)
+	user.Password = getHash([]byte(user.Password))
+}
+
 
 func printFieldKeysAndValues(value reflect.Value) {
 	request := value.Type()
