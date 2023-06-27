@@ -17,6 +17,9 @@ import (
 	// "github.com/go-chi/chi/v5/middleware"
 	"App/internal/controllers"
 	"App/internal/models"
+	// "gorm.io/driver/postgres"
+	// "gorm.io/driver/mysql"
+	// "gorm.io/gorm"
 )
 
 // Error Handling
@@ -37,33 +40,33 @@ var psqlInfo string
 
 func main() {
 
+	// !!!!!!!!!!!!! REMPLACER LE HOST PAR LA VALEUR DONNEE PAR CETTE COMMANDE !!!!!!!!!!!!!!
+	// docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {{ID_CONTAINER}}
 	var (
-		host     = "localhost"
-		port     = 	"1333"
+		host     = "127.0.0.1"
+		port     = 	"3307"
 		dbuser   = "root"
 		password = "root"
 		dbname   = "db"
 	)
 
-	// psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-	// 	host, port, dbuser, password, dbname)
-
-	// dsn := "host=localhost user=root password=root dbname=db port=1333 sslmode=disable TimeZone=Europe/Paris"
-	dsn := "host=" + host + " user=" + dbuser + " password=" + password + " dbname=" + dbname + " port=" + port + " sslmode=disable TimeZone=Asia/Shanghai"
+    // str := cfg.FormatDSN()
+	psqlInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	host, port, dbuser, password, dbname)
 
 
-	fmt.Println(psqlInfo)
-	us, err := models.NewUserService(dsn)
+	us, err := models.NewUserService(psqlInfo)
 	fmt.Println(us, err)
-	listenPort := "8080"
+	listenPort := "localhost:8097"
 	
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	panic(err)
-	// }
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
-	defer us.Close()
-	us.DBDestructiveReset()
+	// defer us.Close()
+	// us.DBDestructiveReset()
+	us.Ping()
 
 	usersC := controllers.NewUsers(us) // Handling User Controller
 	
@@ -79,9 +82,11 @@ func main() {
 
 	r := mux.NewRouter()
 
+	fmt.Println("après new router", r)
 	// r.HandleFunc("/signup", usersC.New).Methods("GET")
 	r.HandleFunc("/signup", usersC.Create).Methods("POST")
 
 	fmt.Println("listening on port ", listenPort)
     http.ListenAndServe(listenPort, r)
+	fmt.Println("EOF")
 }
