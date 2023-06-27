@@ -8,15 +8,6 @@ import (
 
 func FormRequestCall(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		//var user User
-
-		//err := json.NewDecoder(r.Body).Decode(&user)
-		/*		if err != nil {
-					fmt.Println(err)
-					return
-				}
-
-				ctx := context.WithValue(r.Context(), "user", user)*/
 
 		next.ServeHTTP(rw, r)
 	})
@@ -33,3 +24,5 @@ func middleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// ici j'implementerais le middleWare présent sur mon windows
