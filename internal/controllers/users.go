@@ -6,10 +6,7 @@ import (
 
 	"App/internal/models"
 	"App/internal/helpers"
-	// "App/internal/modules/rand"
-	// "App/internal/views"
 	"encoding/json"
-
 )
 
 // Methode create pour ajotuer new user "POST / signup"
@@ -41,6 +38,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := u.signIn(w, &user)
+	
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -51,19 +49,6 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 
 // signIn helps in setting the cookie "email" to the end user
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
-	// Making sure to Remember the token
-	// if user.Remember == "" {
-	// 	token, err := rand.RememberToken()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	fmt.Printf("token", token)
-	// 	user.Remember = token
-	// 	err = u.us.Update(user)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
 
 	cookie := http.Cookie{
 		Name:     "remember_token",
