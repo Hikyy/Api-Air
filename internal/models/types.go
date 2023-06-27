@@ -28,22 +28,16 @@ type UserDB interface {
 	// Alter
 	Create(user *User) error
 	Update(user *User) error
-	Delete(id uint) error
 
 	// Query single user
 	ByID(id uint) (*User, error)
 	ByEmail(email string) (*User, error)
-	ByRemember(token string) (*User, error)
 
 	// Ferme Co DB
 	Close() error
 
-	// Migration Helpers
-	// DBDestructiveReset()
-
 	// Gère Database Communication
 	Ping() error
-	DBDestructiveReset()
 }
 
 // UserService interface qui set les methodes utilisée pour le user model
@@ -55,7 +49,6 @@ type UserService interface {
 	// Sinon retourne : 
 	// ErrNotFound , ErrInvalidPassword ou error 
 	Authenticate(email, password string) (*User, error)
-	DBDestructiveReset()
 	UserDB
 }
 
@@ -83,7 +76,3 @@ type User struct {
 }
 
 type userValFunc func(*User) error
-
-func (us *userService) DBDestructiveReset() {
-	us.UserDB.DBDestructiveReset()
-}

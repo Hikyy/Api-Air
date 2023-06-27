@@ -70,31 +70,9 @@ func (ug *userGorm) ByID(id uint) (*User, error) {
 	return &user, err
 }
 
-// ByRemember looks up a user with the given remember token
-// and returns that user. This mdethos expects the remember
-// token to be already hashed.
-// Errors handeled as the same done by the ByEmail.
-func (ug *userGorm) ByRemember(rememberHash string) (*User, error) {
-	var user User
-	err := first(ug.db.Where("remember_hash = ?", rememberHash), &user)
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
 // Update method to update a user in database
 func (ug *userGorm) Update(user *User) error {
 	return ug.db.Model(&user).Where("name = ?", &user.Name).Update(&user).Error
-}
-
-// Delete method to delete a user in database with the provided ID only
-func (ug *userGorm) Delete(id uint) error {
-	if id == 0 {
-		return ErrInvalidID
-	}
-	user := User{Model: gorm.Model{ID: id}}
-	return ug.db.Where("id = ?", id).Delete(&user).Error
 }
 
 // Authenticate Method is used for Authenticate and Validate login
@@ -131,9 +109,4 @@ func (ug *userGorm) Ping() error {
 	}
 	fmt.Println("Connection ok", ug)
 	return nil
-}
-
-func (ug *userGorm) DBDestructiveReset() {
-	ug.db.DropTableIfExists(&User{})
-	ug.db.AutoMigrate(&User{})
 }
