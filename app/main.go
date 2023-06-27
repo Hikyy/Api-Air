@@ -57,7 +57,7 @@ func main() {
 
 	us, err := models.NewUserService(psqlInfo)
 	fmt.Println(us, err)
-	listenPort := "localhost:8097"
+	listen := "localhost:8097"
 	
 	if err != nil {
 		fmt.Println(err)
@@ -74,19 +74,20 @@ func main() {
 	// r.Use(middleware.RequestID)
     // r.Use(middleware.Logger)
 	// r.Use(middleware.Recoverer)
-
-    // r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type","application/json")
-    //     w.Write([]byte("Hello World!"))
-    // })
-
+		
 	r := mux.NewRouter()
 
 	fmt.Println("après new router", r)
 	// r.HandleFunc("/signup", usersC.New).Methods("GET")
-	r.HandleFunc("/signup", usersC.Create).Methods("POST")
+	// r.HandleFunc("/signup", usersC.Create).Methods("POST")
+	r.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json") // Définit le header en "Application/Json"
+		fmt.Println("w => ", &w)
+		// Appel de la fonction Create du contrôleur Users
+		usersC.Create(w, r)
+	}).Methods("POST")
 
-	fmt.Println("listening on port ", listenPort)
-    http.ListenAndServe(listenPort, r)
+	fmt.Println("listening on port ", listen)
+    http.ListenAndServe(listen, r)
 	fmt.Println("EOF")
 }
