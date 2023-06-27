@@ -1,18 +1,21 @@
 package controllers 
 
 import (
-	// "fmt"
+	"fmt"
 	"net/http"
 
 	"App/internal/models"
 	"App/internal/helpers"
 	// "App/internal/modules/rand"
 	// "App/internal/views"
+	"encoding/json"
+
 )
 
 // Methode create pour ajotuer new user "POST / signup"
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var form SignupForm
+
 	if err := helpers.ParseForm(r, &form); err != nil {
 		panic(err)
 	}
@@ -21,6 +24,17 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		Email:    form.Email,
 		Password: form.Password,
 	}
+
+	r.ParseForm()
+	// decode le json envoyé par le front et l'envoie dans la structure models.User
+	decoder := json.NewDecoder(r.Body)
+	test := decoder.Decode(&user)
+	fmt.Println(test)
+
+
+	fmt.Println(r)
+	fmt.Println("user object", user)
+
 	if err := u.us.Create(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
