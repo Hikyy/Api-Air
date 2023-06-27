@@ -9,11 +9,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	
 )
 
 func NewUserService(connectionInfo string) (UserService, error){
-	fmt.Println("connection infoooooooooo NewUserService", connectionInfo)
-
 	ug, err := newUserGorm(connectionInfo)
 	if	err != nil {
 		return nil, err
@@ -37,22 +36,19 @@ func (ug *userGorm) ByEmail(email string) (*User, error) {
 
 // Implementer et retourner le userGorm
 func newUserGorm(connectionInfo string) (*userGorm, error) {
-	fmt.Println("connection infoooooooooo newUserGorm", connectionInfo)
 	db, err := gorm.Open("postgres", connectionInfo)
-	fmt.Println(gorm.Open)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	db.LogMode(true)
 	return &userGorm{
 		db: db,
-		
 	}, nil
 }
 
 // Methode Create pour add user to db
 func (ug *userGorm) Create(user *User) error {
+	fmt.Println("Composant Create !!!!")
 	return ug.db.Create(user).Error
 }
 
@@ -133,6 +129,7 @@ func (ug *userGorm) Ping() error {
 		ug.db.DB().Close()
 		return errors.New("Connection to DB is not available")
 	}
+	fmt.Println("Connection ok", ug)
 	return nil
 }
 
@@ -140,4 +137,3 @@ func (ug *userGorm) DBDestructiveReset() {
 	ug.db.DropTableIfExists(&User{})
 	ug.db.AutoMigrate(&User{})
 }
-
