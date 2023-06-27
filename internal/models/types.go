@@ -3,7 +3,7 @@ package models
 import (
 	"errors"
 
-	"github.com/AlyRagab/golang-user-registration/modules/hash"
+	"App/internal/modules/hash"
 	"github.com/jinzhu/gorm"
 )
 
@@ -43,6 +43,7 @@ type UserDB interface {
 
 	// Gère Database Communication
 	Ping() error
+	DBDestructiveReset()
 }
 
 // UserService interface qui set les methodes utilisée pour le user model
@@ -54,6 +55,7 @@ type UserService interface {
 	// Sinon retourne : 
 	// ErrNotFound , ErrInvalidPassword ou error 
 	Authenticate(email, password string) (*User, error)
+	DBDestructiveReset()
 	UserDB
 }
 
@@ -82,3 +84,8 @@ type User struct {
 	RememberHash string `gorm:"not null;unique_index"`
 }
 
+type userValFunc func(*User) error
+
+func (us *userService) DBDestructiveReset() {
+	us.UserDB.DBDestructiveReset()
+}
