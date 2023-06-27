@@ -9,17 +9,12 @@ package main
 // PAHO MQTT client MQTT pour se co au Broker
 
 import (
-	//"App/internal/handlers"
 	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
-	// "github.com/go-chi/chi/v5"
-	// "github.com/go-chi/chi/v5/middleware"
+
 	"App/internal/controllers"
 	"App/internal/models"
-	// "gorm.io/driver/postgres"
-	// "gorm.io/driver/mysql"
-	// "gorm.io/gorm"
 )
 
 // Error Handling
@@ -40,8 +35,6 @@ var psqlInfo string
 
 func main() {
 
-	// !!!!!!!!!!!!! REMPLACER LE HOST PAR LA VALEUR DONNEE PAR CETTE COMMANDE !!!!!!!!!!!!!!
-	// docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {{ID_CONTAINER}}
 	var (
 		host     = "127.0.0.1"
 		port     = 	"3307"
@@ -50,13 +43,13 @@ func main() {
 		dbname   = "db"
 	)
 
-    // str := cfg.FormatDSN()
 	psqlInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 	host, port, dbuser, password, dbname)
 
 
 	us, err := models.NewUserService(psqlInfo)
 	fmt.Println(us, err)
+
 	listen := "localhost:8097"
 	
 	if err != nil {
@@ -64,23 +57,13 @@ func main() {
 		panic(err)
 	}
 
-	// defer us.Close()
-	// us.DBDestructiveReset()
 	us.Ping()
 
 	usersC := controllers.NewUsers(us) // Handling User Controller
-	
-    // r := chi.NewRouter()
-	// r.Use(middleware.RequestID)
-    // r.Use(middleware.Logger)
-	// r.Use(middleware.Recoverer)
 		
 	r := mux.NewRouter()
 
-	fmt.Println("après new router", r)
-	// r.HandleFunc("/signup", usersC.New).Methods("GET")
-	// r.HandleFunc("/signup", usersC.Create).Methods("POST")
-	r.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request){
 		w.Header().Set("Content-Type", "application/json") // Définit le header en "Application/Json"
 		fmt.Println("w => ", &w)
 		// Appel de la fonction Create du contrôleur Users
@@ -88,6 +71,6 @@ func main() {
 	}).Methods("POST")
 
 	fmt.Println("listening on port ", listen)
+
     http.ListenAndServe(listen, r)
-	fmt.Println("EOF")
 }
