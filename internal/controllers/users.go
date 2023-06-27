@@ -1,12 +1,12 @@
 package controllers 
 
 import (
-	"fmt"
+	// "fmt"
 	"net/http"
 
 	"App/internal/models"
 	"App/internal/helpers"
-	"App/internal/modules/rand"
+	// "App/internal/modules/rand"
 	// "App/internal/views"
 )
 
@@ -38,22 +38,22 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 // signIn helps in setting the cookie "email" to the end user
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 	// Making sure to Remember the token
-	if user.Remember == "" {
-		token, err := rand.RememberToken()
-		if err != nil {
-			return err
-		}
-		fmt.Printf("token", token)
-		user.Remember = token
-		err = u.us.Update(user)
-		if err != nil {
-			return err
-		}
-	}
+	// if user.Remember == "" {
+	// 	token, err := rand.RememberToken()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	fmt.Printf("token", token)
+	// 	user.Remember = token
+	// 	err = u.us.Update(user)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	cookie := http.Cookie{
 		Name:     "remember_token",
-		Value:    user.Remember,
+		// Value:    user.Remember,
 		HttpOnly: true, // means that it is not accessible to scripts "to protect against XSS"
 	}
 	http.SetCookie(w, &cookie)
