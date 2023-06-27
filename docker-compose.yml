@@ -10,7 +10,8 @@ services:
       POSTGRES_PASSWORD: 'root'
       POSTGRESS_DB: 'db'
     restart: always
-
+    volumes:
+      - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
   adminer:
     image: adminer:4.8.1
     restart: always
