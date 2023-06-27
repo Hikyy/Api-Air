@@ -4,5 +4,65 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/AlyRagab/golang-user-registration/models"
+	"App/internal/models"
+	"App/internal/helpers"
+	"App/internal/modules/rand"
+	// "App/internal/views"
 )
+
+// Methode create pour ajotuer new user "POST / signup"
+func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	var form SignupForm
+	if err := helpers.ParseForm(r, &form); err != nil {
+		panic(err)
+	}
+	user := models.User{
+		Name:     form.Name,
+		Email:    form.Email,
+		Password: form.Password,
+	}
+	if err := u.us.Create(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err := u.signIn(w, &user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Redirect to other page after the login
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+// signIn helps in setting the cookie "email" to the end user
+func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
+	// Making sure to Remember the token
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		fmt.Printf("token", token)
+		user.Remember = token
+		err = u.us.Update(user)
+		if err != nil {
+			return err
+		}
+	}
+
+	cookie := http.Cookie{
+		Name:     "remember_token",
+		Value:    user.Remember,
+		HttpOnly: true, // means that it is not accessible to scripts "to protect against XSS"
+	}
+	http.SetCookie(w, &cookie)
+	return nil
+}
+
+// NewUsers for Parsing new user view/template in signup page
+func NewUsers(us models.UserService) *Users {
+	return &Users{
+		us:        us,
+	}
+}
