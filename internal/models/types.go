@@ -73,8 +73,7 @@ type userGorm struct {
 type User struct {
 	Name         string
 	Email        string `gorm:"not null;unique_index"`
-	Password     string `gorm:"-"` // Ne pas store dans la database
-	PasswordHash string `gorm:"not null"`
+	Password     string `gorm:"no null"` // Ne pas store dans la database
 }
 
 type userValFunc func(*User) error

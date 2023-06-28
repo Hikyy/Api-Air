@@ -83,7 +83,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 		return nil, err
 	}
 	// Compare the login based in the Hash value
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+UserPwPepper))
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(password+UserPwPepper))
 	if err != nil {
 		switch err {
 		case bcrypt.ErrMismatchedHashAndPassword:
@@ -107,6 +107,6 @@ func (ug *userGorm) Ping() error {
 		ug.db.DB().Close()
 		return errors.New("Connection to DB is not available")
 	}
-	fmt.Println("Connection ok", ug)
+	fmt.Println("Connection ok (ping)", ug)
 	return nil
 }

@@ -16,20 +16,23 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err := helpers.ParseForm(r, &form); err != nil {
 		panic(err)
 	}
+	hashedPassword := helpers.HashPassword(form.Password)
+
 	user := models.User{
 		Name:     form.Name,
 		Email:    form.Email,
-		Password: form.Password,
+		Password:  hashedPassword,
 	}
 
 	r.ParseForm()
+
 	// decode le json envoyé par le front et l'envoie dans la structure models.User
 	decoder := json.NewDecoder(r.Body)
-	test := decoder.Decode(&user)
-	fmt.Println(test)
+	decoded := decoder.Decode(&user)
 
+	fmt.Println("decoded", decoded)
+	user.Password = hashedPassword
 
-	fmt.Println(r)
 	fmt.Println("user object", user)
 
 	if err := u.us.Create(&user); err != nil {
