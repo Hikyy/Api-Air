@@ -63,6 +63,9 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+// En encapsulant un objet "*gorm.DB" dans cette structure, il devient possible de regrouper des fonctionnalités spécifiques 
+// à la gestion des utilisateurs ou d'ajouter des méthodes personnalisées pour manipuler les données d'utilisateurs dans la base de données.
+// Ce qui permet les u *userGorm CreateUser / UpdateUser etc
 type userGorm struct {
 	db *gorm.DB
 }
