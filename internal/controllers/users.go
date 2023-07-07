@@ -1,11 +1,13 @@
-package controllers 
+package controllers
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 
-	"App/internal/models"
 	"App/internal/helpers"
+	"App/internal/models"
 	"encoding/json"
 )
 
@@ -13,35 +15,31 @@ import (
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var form SignupForm
 
-	if err := helpers.ParseForm(r, &form); err != nil {
-		panic(err)
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	if err = json.Unmarshal(body, &form); err != nil {
+		log.Fatal(err)
+	}
+
 	hashedPassword := helpers.HashPassword(form.Password)
 
 	user := models.User{
 		Name:     form.Name,
 		Email:    form.Email,
-		Password:  hashedPassword,
+		Password: hashedPassword,
 	}
-
-	r.ParseForm()
-
-	// decode le json envoyé par le front et l'envoie dans la structure models.User
-	decoder := json.NewDecoder(r.Body)
-	decoded := decoder.Decode(&user)
-
-	fmt.Println("decoded", decoded)
-	user.Password = hashedPassword
-
-	fmt.Println("user object", user)
 
 	if err := u.us.Create(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err := u.signIn(w, &user)
-	
+	err = u.signIn(w, &user)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,7 +52,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 
 	cookie := http.Cookie{
-		Name:     "remember_token",
+		Name: "remember_token",
 		// Value:    user.Remember,
 		HttpOnly: true, // means that it is not accessible to scripts "to protect against XSS"
 	}
@@ -65,6 +63,47 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 // NewUsers for Parsing new user view/template in signup page
 func NewUsers(us models.UserService) *Users {
 	return &Users{
-		us:        us,
+		us: us,
 	}
+}
+
+func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
+	var form LoginForm
+	if err := helpers.ParseForm(r, &form); err != nil {
+		panic(err)
+	}
+
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = json.Unmarshal(body, &form); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("form", form)
+	user, err := u.us.Authenticate(form.Email, form.Password)
+	fmt.Println("user => ", user, err)
+
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			fmt.Fprintln(w, "Invalid Email Address")
+		case models.ErrInvalidPassword:
+			fmt.Fprintln(w, "Invalid Password")
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	err = u.signIn(w, user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Redirect to other page after the login
+	fmt.Fprintf(w, "Login has been succeeded")
+	// http.Redirect(w, r, "/cookietest", http.StatusFound)
 }

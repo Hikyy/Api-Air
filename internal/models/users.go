@@ -1,31 +1,31 @@
 package models
 
 import (
-	"fmt"
-	"errors"
 	"App/internal/modules/hash"
+	"errors"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	
 )
 
-func NewUserService(connectionInfo string) (UserService, error){
+func NewUserService(connectionInfo string) (UserService, error) {
 	ug, err := newUserGorm(connectionInfo)
-	if	err != nil {
+	if err != nil {
 		return nil, err
 	}
 	hmac := hash.NewHMAC(HmacSecret)
 	uv := &userValidator{
-		UserDB:ug,
-		hmac: hmac,
+		UserDB: ug,
+		hmac:   hmac,
 	}
 	return &userService{
 		UserDB: uv,
 	}, nil
 }
+
 // ByEmail pour get user by email
 func (ug *userGorm) ByEmail(email string) (*User, error) {
 	var user User
@@ -79,11 +79,13 @@ func (ug *userGorm) Update(user *User) error {
 func (us *userService) Authenticate(email, password string) (*User, error) {
 	// Vlidate if the user is existed in the database or no
 	foundUser, err := us.ByEmail(email)
+	fmt.Println("foundUser => ", foundUser)
 	if err != nil {
 		return nil, err
 	}
 	// Compare the login based in the Hash value
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(password+UserPwPepper))
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(password))
+
 	if err != nil {
 		switch err {
 		case bcrypt.ErrMismatchedHashAndPassword:

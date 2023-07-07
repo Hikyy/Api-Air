@@ -19,5 +19,5 @@ type LoginForm struct {
 type Users struct {
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
-	us 		 		models.UserService
+	us       models.UserService
 }

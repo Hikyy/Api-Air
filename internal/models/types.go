@@ -12,7 +12,7 @@ var (
 	ErrNotFound = errors.New("Models: Resource Not Found")
 	// ErrInvalidID utilisée quand on passe un ID à la méthode Delete pour delete un user de la DB
 	ErrInvalidID = errors.New("Models: ID must be Valid ID")
-	// UserPwPepper ajouté pepper value 
+	// UserPwPepper ajouté pepper value
 	UserPwPepper = "secret-random-string"
 	// ErrInvalidPassword pour retourne invalide password
 	ErrInvalidPassword = errors.New("Models: Invalid Password")
@@ -46,8 +46,8 @@ type UserDB interface {
 type UserService interface {
 	// Authenticate verifie email et password donné
 	// Si correspondance retourne user email
-	// Sinon retourne : 
-	// ErrNotFound , ErrInvalidPassword ou error 
+	// Sinon retourne :
+	// ErrNotFound , ErrInvalidPassword ou error
 	Authenticate(email, password string) (*User, error)
 	UserDB
 }
@@ -63,7 +63,7 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
-// En encapsulant un objet "*gorm.DB" dans cette structure, il devient possible de regrouper des fonctionnalités spécifiques 
+// En encapsulant un objet "*gorm.DB" dans cette structure, il devient possible de regrouper des fonctionnalités spécifiques
 // à la gestion des utilisateurs ou d'ajouter des méthodes personnalisées pour manipuler les données d'utilisateurs dans la base de données.
 // Ce qui permet les u *userGorm CreateUser / UpdateUser etc
 type userGorm struct {
@@ -71,9 +71,14 @@ type userGorm struct {
 }
 
 type User struct {
-	Name         string
-	Email        string `gorm:"not null;unique_index"`
-	Password     string `gorm:"no null"` // Ne pas store dans la database
+	Name     string
+	Email    string `gorm:"not null;unique_index"`
+	Password string `gorm:"no null"` // Ne pas store dans la database
+}
+
+type UserLogin struct {
+	Email    string
+	Password string
 }
 
 type userValFunc func(*User) error
