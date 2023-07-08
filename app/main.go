@@ -1,13 +1,5 @@
 package main
 
-// il est necessaire de relancer le code à chaque fois
-// chi.router
-// gofiber en server http2
-// GORM à vérifier
-
-// MOCHI MQTT broker
-// PAHO MQTT client MQTT pour se co au Broker
-
 import (
 	"fmt"
 	"github.com/gorilla/mux"
@@ -69,7 +61,7 @@ func main() {
 		usersC.GetAllUsers(w, r)
 	}).Methods("GET")
 
-	r.HandleFunc("/profil/update", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/profil/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		usersC.UpdateRoles(w, r, "admin")
 	}).Methods("PATCH")
