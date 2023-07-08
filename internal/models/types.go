@@ -1,6 +1,7 @@
 package models
 
 import (
+	"App/internal/controllers"
 	"errors"
 
 	"App/internal/modules/hash"
@@ -27,7 +28,7 @@ var (
 type UserDB interface {
 	// Alter
 	Create(user *User) error
-	Update(user *User) error
+	Update(user *controllers.Users, role string) error
 
 	// Query single user
 	ByID(id uint) (*User, error)
@@ -38,6 +39,8 @@ type UserDB interface {
 
 	// Gère Database Communication
 	Ping() error
+
+	GetAllUsers() ([]byte, error)
 }
 
 // UserService interface qui set les methodes utilisée pour le user model
@@ -79,8 +82,20 @@ type User struct {
 }
 
 type UserLogin struct {
-	user_email    string
+	User_email    string
 	User_password string
 }
 
+//type UserJSON struct {
+//	Name     string `json:"User_firstname"`
+//	LastName string `json:"User_lastname"`
+//	Role     string `json:"Group_name"`
+//}
+
+type UserJSON struct {
+	Name     string `json:"name"`
+	LastName string `json:"lastname"`
+	Role     string `json:"role"`
+	Email    string `json:"email"`
+}
 type userValFunc func(*User) error
