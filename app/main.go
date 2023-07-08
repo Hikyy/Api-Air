@@ -55,7 +55,7 @@ func main() {
 	r.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Println("w => ", &w)
-		usersC.Create(w, r)
+		usersC.Create(w, r, "Users")
 	}).Methods("POST")
 
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
