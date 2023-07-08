@@ -29,7 +29,7 @@ func NewUserService(connectionInfo string) (UserService, error) {
 // ByEmail pour get user by email
 func (ug *userGorm) ByEmail(email string) (*User, error) {
 	var user User
-	db := ug.db.Where("email = ?", email).First(&user)
+	db := ug.db.Table("Users").Where("user_email = ?", email).First(&user)
 	err := first(db, &user)
 	return &user, err
 }
@@ -49,13 +49,14 @@ func newUserGorm(connectionInfo string) (*userGorm, error) {
 // Methode Create pour add user to db
 func (ug *userGorm) Create(user *User) error {
 	fmt.Println("Composant Create !!!!")
-	return ug.db.Create(user).Error
+	// on peut choisir le nom de la table !!!!!!!!!
+	return ug.db.Table("Users").Create(user).Error
 }
 
 // will query the gorm.DB and get the first item from db and place it into
 // dst , if nothing is found , it will return error.
 func first(db *gorm.DB, dst interface{}) error {
-	err := db.First(dst).Error
+	err := db.Table("Users").First(dst).Error
 	if err == gorm.ErrRecordNotFound {
 		return ErrNotFound
 	}
@@ -72,7 +73,7 @@ func (ug *userGorm) ByID(id uint) (*User, error) {
 
 // Update method to update a user in database
 func (ug *userGorm) Update(user *User) error {
-	return ug.db.Model(&user).Where("name = ?", &user.Name).Update(&user).Error
+	return ug.db.Model(&user).Where("name = ?", &user.User_firstname).Update(&user).Error
 }
 
 // Authenticate Method is used for Authenticate and Validate login
@@ -84,7 +85,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 		return nil, err
 	}
 	// Compare the login based in the Hash value
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.User_password), []byte(password))
 
 	if err != nil {
 		switch err {

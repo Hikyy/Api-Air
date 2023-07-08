@@ -71,14 +71,16 @@ type userGorm struct {
 }
 
 type User struct {
-	Name     string
-	Email    string `gorm:"not null;unique_index"`
-	Password string `gorm:"no null"` // Ne pas store dans la database
+	User_firstname string `gorm:"not null"`
+	User_lastname  string `gorm:"not null"`
+	User_email     string `gorm:"not null;unique_index"`
+	User_password  string `gorm:"not null;"`
+	Group_name     string `gorm:"default:'admin'"`
 }
 
 type UserLogin struct {
-	Email    string
-	Password string
+	user_email    string
+	User_password string
 }
 
 type userValFunc func(*User) error

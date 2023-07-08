@@ -12,7 +12,7 @@ import (
 )
 
 // Methode create pour ajotuer new user "POST / signup"
-func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+func (u *Users) Create(w http.ResponseWriter, r *http.Request, table string) {
 	var form SignupForm
 
 	body, err := io.ReadAll(r.Body)
@@ -25,12 +25,13 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	hashedPassword := helpers.HashPassword(form.Password)
+	hashedPassword := helpers.HashPassword(form.User_password)
 
 	user := models.User{
-		Name:     form.Name,
-		Email:    form.Email,
-		Password: hashedPassword,
+		User_firstname: form.User_firstname,
+		User_lastname:  form.User_lastname,
+		User_email:     form.User_email,
+		User_password:  hashedPassword,
 	}
 
 	if err := u.us.Create(&user); err != nil {
@@ -84,7 +85,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("form", form)
-	user, err := u.us.Authenticate(form.Email, form.Password)
+	user, err := u.us.Authenticate(form.User_email, form.User_password)
 	fmt.Println("user => ", user, err)
 
 	if err != nil {

@@ -5,14 +5,15 @@ import (
 )
 
 type SignupForm struct {
-	Name     string `schema:"name"`
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
+	User_firstname string `gorm:"not null"`
+	User_lastname  string `gorm:"not null"`
+	User_email     string `gorm:"not null;unique_index"`
+	User_password  string `gorm:"not null;"`
 }
 
 type LoginForm struct {
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
+	User_email    string `gorm:"not null;unique_index"`
+	User_password string `gorm:"not null;"`
 }
 
 // Users Struct for holding Users variables
