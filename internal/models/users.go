@@ -2,9 +2,9 @@ package models
 
 import (
 	"App/internal/modules/hash"
+	"encoding/json"
 	"errors"
 	"fmt"
-
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 
@@ -35,6 +35,7 @@ func (ug *userGorm) ByEmail(email string) (*User, error) {
 }
 
 // Implementer et retourner le userGorm
+// permet co db
 func newUserGorm(connectionInfo string) (*userGorm, error) {
 	db, err := gorm.Open("postgres", connectionInfo)
 	if err != nil {
@@ -72,8 +73,8 @@ func (ug *userGorm) ByID(id uint) (*User, error) {
 }
 
 // Update method to update a user in database
-func (ug *userGorm) Update(user *User) error {
-	return ug.db.Model(&user).Where("name = ?", &user.User_firstname).Update(&user).Error
+func (ug *userGorm) Update(user *User, role string) error {
+	return ug.db.Model(&user).Table("Users").Where("user_firstname = ?", &user.User_firstname).Update("group_name", role).Error
 }
 
 // Authenticate Method is used for Authenticate and Validate login
@@ -98,6 +99,19 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 		}
 	}
 	return foundUser, nil
+}
+func (ug *userGorm) GetAllUsers() ([]byte, error) {
+	var users []User
+	db := ug.db.Table("Users").Order("user_firstname").Find(&users)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	fmt.Println(users)
+	jsonData, err := json.Marshal(users)
+	if err != nil {
+		return nil, err
+	}
+	return jsonData, nil
 }
 
 // CloseDB to be used as `defer us.db.Close()`
