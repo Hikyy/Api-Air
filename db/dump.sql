@@ -36,9 +36,14 @@ create table "UserGroups"
 (
     group_name    varchar(255) not null
         constraint "UserGroup_pk"
-            primary key,
-    group_options jsonb        not null
+            primary key
 );
+
+INSERT INTO "UserGroups" (group_name)
+VALUES
+    ('user'),
+    ('admin'),
+    ('owner');
 
 alter table "UserGroups"
     owner to postgres;
