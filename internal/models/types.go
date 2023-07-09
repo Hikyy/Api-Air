@@ -1,11 +1,13 @@
 package models
 
 import (
-	"App/internal/controllers"
+	"database/sql"
 	"errors"
+	"time"
 
 	"App/internal/modules/hash"
-	"github.com/jinzhu/gorm"
+
+	"gorm.io/gorm"
 )
 
 var (
@@ -18,20 +20,20 @@ var (
 	// ErrInvalidPassword pour retourne invalide password
 	ErrInvalidPassword = errors.New("Models: Invalid Password")
 	// HmacSecret for creating the HMAC
-	HmacSecret        = "secret-hmac-key"
-	_          UserDB = &userGorm{}
+	HmacSecret          = "secret-hmac-key"
+	_          EntityDB = &DbGorm{}
 )
 
 // UserDB interface handle toute les opérations User dans la DB
 // Couche database pour les queries single user
 
-type UserDB interface {
+type EntityDB interface {
 	// Alter
-	Create(user *User) error
-	Update(user *controllers.Users, role string) error
-
+	Create(entity interface{}) error
+	Update(entity interface{}, attribute string, value string) error
+	// SendData(user *interface{}) error
 	// Query single user
-	ByID(id uint) (*User, error)
+	ByID(id uint, entity interface{}) error
 	ByEmail(email string) (*User, error)
 
 	// Ferme Co DB
@@ -43,47 +45,45 @@ type UserDB interface {
 	GetAllUsers() ([]byte, error)
 }
 
-// UserService interface qui set les methodes utilisée pour le user model
+// EntityImplementService interface qui set les methodes utilisée pour le user model
 
 // Database Auth Layer
-type UserService interface {
+type EntityImplementService interface {
 	// Authenticate verifie email et password donné
 	// Si correspondance retourne user email
 	// Sinon retourne :
 	// ErrNotFound , ErrInvalidPassword ou error
 	Authenticate(email, password string) (*User, error)
-	UserDB
+	EntityDB
 }
 
-type userService struct {
-	UserDB
+type EntityService struct {
+	EntityDB
 }
 
 // Validation pour chaque requête DB
 
-type userValidator struct {
-	UserDB
+type dbConnectionValidator struct {
+	EntityDB
 	hmac hash.HMAC
 }
 
 // En encapsulant un objet "*gorm.DB" dans cette structure, il devient possible de regrouper des fonctionnalités spécifiques
 // à la gestion des utilisateurs ou d'ajouter des méthodes personnalisées pour manipuler les données d'utilisateurs dans la base de données.
 // Ce qui permet les u *userGorm CreateUser / UpdateUser etc
-type userGorm struct {
-	db *gorm.DB
+type DbGorm struct {
+	db    *gorm.DB
+	dbase *sql.DB
 }
 
 type User struct {
-	User_firstname string `gorm:"not null"`
-	User_lastname  string `gorm:"not null"`
-	User_email     string `gorm:"not null;unique_index"`
-	User_password  string `gorm:"not null;"`
-	Group_name     string `gorm:"default:'admin'"`
-}
-
-type UserLogin struct {
-	User_email    string
-	User_password string
+	Firstname  string
+	Lastname   string
+	Email      string    `gorm:"not null;unique_index"`
+	Password   string    `gorm:"no null"` // Ne pas store dans la database
+	Group_name string    `gorm:"default:'admin'"`
+	CreatedAt  time.Time `gorm:"type:timestamp"`
+	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
 
 //type UserJSON struct {
