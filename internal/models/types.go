@@ -33,7 +33,7 @@ type EntityDB interface {
 	Update(entity interface{}, attribute string, value string) error
 	// SendData(user *interface{}) error
 	// Query single user
-	ByID(id uint, entity interface{}) error
+	ByID(id string, entity interface{}) error
 	ByEmail(email string) (*User, error)
 
 	// Ferme Co DB
@@ -77,6 +77,7 @@ type DbGorm struct {
 }
 
 type User struct {
+	Id         int
 	Firstname  string
 	Lastname   string
 	Email      string    `gorm:"not null;unique_index"`
@@ -98,4 +99,5 @@ type UserJSON struct {
 	Role     string `json:"role"`
 	Email    string `json:"email"`
 }
+
 type userValFunc func(*User) error

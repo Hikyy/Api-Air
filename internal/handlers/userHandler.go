@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 
 	"App/internal/helpers"
@@ -89,4 +90,29 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
 	}
 	http.SetCookie(w, &cookie)
 	return nil
+}
+
+func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
+	users, _ := u.us.GetAllUsers()
+	w.Write(users)
+}
+
+func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	user := models.User{}
+	err := u.us.ByID(id, &user)
+	if err != nil {
+		// Gérer l'erreur
+		fmt.Println(err)
+	}
+	jsonUser, _ := json.Marshal(user)
+
+	fmt.Println(user)
+	w.Write(jsonUser)
+
+	test := u.us.Update(&user, "group_name", "user")
+	testJSON, _ := json.Marshal(test)
+	w.Write(testJSON)
+	w.Write(jsonUser)
+
 }

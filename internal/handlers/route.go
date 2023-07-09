@@ -13,7 +13,9 @@ func route(router *chi.Mux, userHandler *Users) {
 
 	router.Post("/login", userHandler.Login)
 
-	// router.Get("/profil", userHandler.GetAllUsers)
+	router.Get("/profil", userHandler.GetAll)
+
+	router.Patch("/profil/user/{id}", userHandler.Update)
 
 	// router.Patch("/profil/update/{id}", userHandler.UpdateRoles)
 

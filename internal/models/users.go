@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"gorm.io/gorm/clause"
+
 	// "errors"
 	"fmt"
 	"reflect"
@@ -22,7 +24,7 @@ func (ug *DbGorm) ByEmail(email string) (*User, error) {
 
 // Methode Create pour add user to db
 func (ug *DbGorm) Create(entity interface{}) error {
-	return ug.db.Create(entity).Error
+	return ug.db.Table("users").Create(entity).Error
 }
 
 // will query the gorm.DB and get the first item from db and place it into
@@ -36,9 +38,9 @@ func first(db *gorm.DB, entity interface{}) error {
 }
 
 // ByID method to get a user by ID
-func (ug *DbGorm) ByID(id uint, entity interface{}) error {
-	db := ug.db.Where("id = ?", id).First(&entity)
-	err := first(db, &entity)
+func (ug *DbGorm) ByID(id string, entity interface{}) error {
+	db := ug.db.Where("id = ?", id).First(entity)
+	err := first(db, entity)
 	return err
 }
 
@@ -52,8 +54,8 @@ func (ug *DbGorm) Update(entity interface{}, attribute string, value string) err
 		return ErrInvalidID
 	}
 	id := strconv.Itoa(idField.Interface().(int))
-
-	return ug.db.Model(&entity).Where("id = ?", id).Update(attribute, value).Error
+	fmt.Println(ug.db.Model(&entity).Where("id = ?", id).Update(attribute, value).Error)
+	return ug.db.Model(&entity).Clauses(clause.Returning{Columns: []clause.Column{{Name: "group_name"}}}).Where("id = ?", id).Update(attribute, value).Error
 }
 
 // Authenticate Method is used for Authenticate and Validate login
@@ -82,7 +84,7 @@ func (us *DatabaseProvider) Authenticate(email, password string) (*User, error) 
 
 func (ug *DbGorm) GetAllUsers() ([]byte, error) {
 	var users []User
-	db := ug.db.Table("Users").Order("user_firstname").Find(&users)
+	db := ug.db.Table("users").Order("firstname").Find(&users)
 	if db.Error != nil {
 		return nil, db.Error
 	}
