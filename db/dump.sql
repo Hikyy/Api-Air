@@ -32,33 +32,33 @@ create sequence conditions_condition_id_seq
 
 alter sequence conditions_condition_id_seq owner to postgres;
 
-create table "UserGroups"
+create table "user_groups"
 (
     group_name    varchar(255) not null
-        constraint "UserGroup_pk"
+        constraint "user_group_pk"
             primary key
 );
 
-INSERT INTO "UserGroups" (group_name)
+INSERT INTO "user_groups" (group_name)
 VALUES
     ('user'),
     ('admin'),
     ('owner');
 
-alter table "UserGroups"
+alter table "user_groups"
     owner to postgres;
 
-create table "Buildings"
+create table "buildings"
 (
     building_id varchar(1) not null
-        constraint "Building_pk"
+        constraint "building_pk"
             primary key
 );
 
-alter table "Buildings"
+alter table "buildings"
     owner to postgres;
 
-create table "Floors"
+create table "floors"
 (
     floor_id     integer default nextval('floors_floor_id_seq'::regclass) not null
         constraint floors_pkey
@@ -66,15 +66,15 @@ create table "Floors"
     floor_number integer                                                  not null,
     building_id  varchar(1)                                               not null
         constraint floors_building_id_fkey
-            references "Buildings"
+            references "buildings"
 );
 
-alter table "Floors"
+alter table "floors"
     owner to postgres;
 
-alter sequence floors_floor_id_seq owned by "Floors".floor_id;
+alter sequence floors_floor_id_seq owned by "floors".floor_id;
 
-create table "Rooms"
+create table "rooms"
 (
     room_id     integer default nextval('rooms_room_id_seq'::regclass) not null
         constraint rooms_pkey
@@ -82,185 +82,187 @@ create table "Rooms"
     room_number integer                                                not null,
     floor_id    integer                                                not null
         constraint rooms_floor_id_fkey
-            references "Floors"
+            references "floors"
 );
 
-alter table "Rooms"
+alter table "rooms"
     owner to postgres;
 
-alter sequence rooms_room_id_seq owned by "Rooms".room_id;
+alter sequence rooms_room_id_seq owned by "rooms".room_id;
 
-create table "Sensors"
+create table "sensors"
 (
     sensor_id   serial
         primary key,
     sensor_name varchar(50) not null,
     sensor_type varchar(50) not null,
     room_id     integer
-        constraint "Sensors_Rooms_room_id_fk"
-            references "Rooms"
+        constraint "sensors_rooms_room_id_fk"
+            references "rooms"
 );
 
-alter table "Sensors"
+alter table "sensors"
     owner to postgres;
 
-create table "Actuators"
+create table "actuators"
 (
     actuator_id   serial
         primary key,
     actuator_name varchar(50) not null,
     actuator_type varchar(50) not null,
     room_id       integer
-        constraint "Actuators_Rooms_room_id_fk"
-            references "Rooms"
+        constraint "actuators_rooms_room_id_fk"
+            references "rooms"
 );
 
-alter table "Actuators"
+alter table "actuators"
     owner to postgres;
 
-create table "SensorEvents"
+create table "sensor_events"
 (
     event_id        serial
         primary key,
     event_timestamp timestamp with time zone not null,
     event_data      jsonb,
     sensor_id       integer                  not null
-        references "Sensors"
+        references "sensors"
 );
 
-alter table "SensorEvents"
+alter table "sensor_events"
     owner to postgres;
 
-create table "Users"
+CREATE SEQUENCE IF NOT EXISTS users_id_seq;
+
+create table "users"
 (
-    user_id              serial
-        primary key,
-    user_firstname       varchar(255)                                               not null,
-    user_lastname        varchar(255)                                               not null,
-    user_email           varchar(255)                                               not null,
-    user_password        varchar(1000),
-    user_created_at      timestamp with time zone default CURRENT_TIMESTAMP,
-    user_last_updated_at timestamp with time zone default CURRENT_TIMESTAMP,
+    "id" integer DEFAULT nextval('users_id_seq') NOT NULL,
+    "firstname" character varying(255) NOT NULL,
+    "lastname" character varying(255) NOT NULL,
+    "email" character varying(255) NOT NULL,
+    "password" character varying(255) NOT NULL,
+    "created_at" timestamp(0),
+    "updated_at" timestamp(0),
     group_name           varchar(255)             default 'user'::character varying not null
-        constraint "User_UserGroup_name_fk"
-        references "UserGroups"
+        constraint "User_user_group_name_fk"
+        references "user_groups",
+    CONSTRAINT "users_id_key" UNIQUE ("id")
 );
 
-alter table "Users"
+alter table "users"
     owner to postgres;
 
-create unique index "User_email_uindex"
-    on "Users" (user_email);
+create unique index "user_email_uindex"
+    on "users" (email);
 
-create table "UserLogs"
+create table "user_logs"
 (
     log_id        serial
         primary key,
     log_timestamp timestamp with time zone default CURRENT_TIMESTAMP not null,
     log_data      jsonb,
     user_id       integer                                            not null
-        references "Users"
+        references "users"("id")
 );
 
-alter table "UserLogs"
+alter table "user_logs"
     owner to postgres;
 
-create table "ActuatorStates"
+create table "actuator_states"
 (
     actuator_id     integer not null
         primary key
-        references "Actuators",
+        references "actuators",
     state           jsonb,
     last_updated_at timestamp with time zone default CURRENT_TIMESTAMP
 );
 
-alter table "ActuatorStates"
+alter table "actuator_states"
     owner to postgres;
 
-create table "Scenes"
+create table "scenes"
 (
     scene_id   integer default nextval('scenes_scene_id_seq'::regclass) not null
         primary key,
     scene_name varchar(255)                                             not null
 );
 
-alter table "Scenes"
+alter table "scenes"
     owner to postgres;
 
-create table "Actions"
+create table "actions"
 (
     action_id   integer default nextval('actions_action_id_seq'::regclass) not null
         primary key,
     action_name varchar(255)                                               not null,
     actuator_id integer                                                    not null
-        references "Actuators",
+        references "actuators",
     state       jsonb
 );
 
-alter table "Actions"
+alter table "actions"
     owner to postgres;
 
-create table "SceneActions"
+create table "scene_actions"
 (
     scene_id  integer not null
-        references "Scenes",
+        references "scenes",
     action_id integer not null
-        references "Actions",
+        references "actions",
     primary key (scene_id, action_id)
 );
 
-alter table "SceneActions"
+alter table "scene_actions"
     owner to postgres;
 
-create table "Automations"
+create table "automations"
 (
     automation_id   integer default nextval('automations_automation_id_seq'::regclass) not null
         primary key,
     automation_name varchar(255)                                                       not null
 );
 
-alter table "Automations"
+alter table "automations"
     owner to postgres;
 
-alter sequence automations_automation_id_seq owned by "Automations".automation_id;
+alter sequence automations_automation_id_seq owned by "automations".automation_id;
 
-create table "AutomationActions"
+create table "automation_actions"
 (
     automation_id integer not null
-        references "Automations",
+        references "automations",
     action_id     integer not null
-        references "Actions",
+        references "actions",
     primary key (automation_id, action_id)
 );
 
-alter table "AutomationActions"
+alter table "automation_actions"
     owner to postgres;
 
-create table "Conditions"
+create table "conditions"
 (
     condition_id   integer default nextval('conditions_condition_id_seq'::regclass) not null
         primary key,
     condition_name varchar(255)                                                     not null,
     sensor_id      integer                                                          not null
-        references "Sensors",
+        references "sensors",
     data_key       varchar(255)                                                     not null,
     operator       varchar(10)                                                      not null,
     value          double precision                                                 not null
 );
 
-alter table "Conditions"
+alter table "conditions"
     owner to postgres;
 
-alter sequence conditions_condition_id_seq owned by "Conditions".condition_id;
+alter sequence conditions_condition_id_seq owned by "conditions".condition_id;
 
-create table "AutomationConditions"
+create table "automation_conditions"
 (
     automation_id integer not null
-        references "Automations",
+        references "automations",
     condition_id  integer not null
-        references "Conditions",
+        references "conditions",
     primary key (automation_id, condition_id)
 );
 
-alter table "AutomationConditions"
+alter table "automation_conditions"
     owner to postgres;
