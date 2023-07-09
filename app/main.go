@@ -61,10 +61,10 @@ func main() {
 		usersC.GetAllUsers(w, r)
 	}).Methods("GET")
 
-	r.HandleFunc("/profil/update/{id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		usersC.UpdateRoles(w, r, "admin")
-	}).Methods("PATCH")
+	//r.HandleFunc("/profil/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	//	w.Header().Set("Content-Type", "application/json")
+	//	usersC.UpdateRoles(w, r, "admin")
+	//}).Methods("PATCH")
 
 	fmt.Println("listening on port ", listen)
 
