@@ -7,17 +7,21 @@ import (
 	"net/http"
 )
 
-var broker = "mqtt://mqtt.arcplex.fr:2295" // Remplacez par l'adresse et le port de votre broker MQTT
-var clientID = "go-mqtt-client"
+var (
+	broker   = "mqtt://mqtt.arcplex.fr:2295"
+	username = "groupe9"
+	password = "Pu3a76ZS0pgT"
+)
 
 func main() {
-	err := models.DatabaseServiceProvider()
 
+	err := models.DatabaseServiceProvider()
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
 		return
 	}
 	defer models.InitGorm.Close()
+	handlers.SetMQTT(broker, username, password)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
@@ -31,4 +35,5 @@ func main() {
 	// err = godotenv.Load()
 
 	http.ListenAndServe(":8097", router)
+
 }

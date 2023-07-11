@@ -4,34 +4,37 @@ import (
 	"App/internal/models"
 	"encoding/json"
 	"fmt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"os"
 	"os/signal"
 	"time"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-func SetMQTT(broker string, clientID string) {
+func SetMQTT(broker string, username string, password string) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker(broker)
-	opts.SetClientID(clientID)
-
+	opts.SetUsername(username)
+	opts.SetPassword(password)
+	opts.SetDefaultPublishHandler(messageHandler)
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatal(token.Error())
 	}
 
 	// Abonnement au topic de réception
-	topic := "mytopic"
+	topic := "groupe9/packet/1ac45e2c-2bc2-4027-a7f6-0dbcafcad53b"
 
 	if token := client.Subscribe(topic, 0, messageHandler); token.Wait() && token.Error() != nil {
 		log.Fatal(token.Error())
+
 	}
 
-	log.Printf("Connecté au broker MQTT %s et abonné au topic %s\n", broker, topic)
+	log.Printf("Connecté au broker MQTT %s et abonné au topic %s\n ", broker, topic)
 
 	// Envoi de messages
 	data := models.SensorData{
@@ -53,9 +56,6 @@ func SetMQTT(broker string, clientID string) {
 	<-c // Attente de l'interruption du signal (CTRL+C)
 }
 func messageHandler(client MQTT.Client, msg MQTT.Message) {
-	fmt.Printf("Message reçu sur le topic: %s\n", msg.Topic())
-	fmt.Printf("Payloadss: %s\n", msg.Payload())
-	// var data map[string]string
 
 	var data map[string]interface{}
 	err := json.Unmarshal(msg.Payload(), &data)
@@ -63,17 +63,15 @@ func messageHandler(client MQTT.Client, msg MQTT.Message) {
 		fmt.Println("Erreur lors du décodage du payload JSON:", err)
 		return
 	}
-
-	current, ok := data["current"].(float64)
-	if !ok {
-		fmt.Println("Erreur lors de l'accès à l'indice 'current'")
-		return
+	// fmt.Println("data:", json.Unmarshal([]byte(msg.Payload())))
+	for key, value := range data {
+		fmt.Println("value:", value, "key:", key)
 	}
+	fmt.Printf("Message reçu sur le topic: %s\n", msg.Topic())
 
-	fmt.Println("Valeur de 'current':", current)
+	fmt.Printf("Vos daronne qui font l'emeutes")
 
 }
-
 func publishMessage(client MQTT.Client, topic, payload string) {
 	token := client.Publish(topic, 0, false, payload)
 	token.Wait()

@@ -88,11 +88,16 @@ type User struct {
 	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
 
-//type UserJSON struct {
-//	Name     string `json:"User_firstname"`
-//	LastName string `json:"User_lastname"`
-//	Role     string `json:"Group_name"`
-//}
+//	type UserJSON struct {
+//		Name     string `json:"User_firstname"`
+//		LastName string `json:"User_lastname"`
+//		Role     string `json:"Group_name"`
+//	}
+type Sensors struct {
+	gorm.Model
+	Name string
+	Data string `gorm:"type:json"`
+}
 
 type UserJSON struct {
 	Name     string `json:"name"`
