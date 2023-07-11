@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 
 	"github.com/gorilla/schema"
@@ -39,10 +40,9 @@ func InitOptimus() optimus.Optimus {
 	optimusRandom, _ := strconv.Atoi(os.Getenv("OPTIMUS_RANDOM"))
 
 	fmt.Println("optimusPrime : ", optimusPrime, "optimusInverse : ", optimusInverse, "optimusRandom : ", optimusRandom)
-	
+
 	return optimus.New(uint64(optimusPrime), uint64(optimusInverse), uint64(optimusRandom))
 }
-
 
 func CheckPassword(hashedPassword string, password string) bool {
 	bsp, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -57,4 +57,33 @@ func CheckPassword(hashedPassword string, password string) bool {
 		return true
 	}
 	return false
+}
+
+func FillStruct(destination interface{}, source interface{}) {
+	destinationValue := reflect.ValueOf(destination).Elem()
+	sourceValue := reflect.ValueOf(source).Elem()
+	sourceType := sourceValue.Type()
+
+	for i := 0; i < destinationValue.NumField(); i++ {
+		destinationField := destinationValue.Field(i)
+		destinationFieldType := destinationField.Type()
+		destinationFieldName := destinationValue.Type().Field(i).Name
+
+		for j := 0; j < sourceValue.NumField(); j++ {
+			sourceField := sourceValue.Field(j)
+			sourceFieldType := sourceField.Type()
+			sourceFieldName := sourceType.Field(j).Name
+
+			if destinationFieldName == sourceFieldName && destinationFieldType == sourceFieldType {
+				if destinationField.CanSet() && sourceField.IsValid() {
+					if destinationField.Kind() == reflect.Struct && sourceField.Kind() == reflect.Struct {
+						FillStruct(destinationField.Addr().Interface(), sourceField.Interface())
+					} else {
+						destinationField.Set(sourceField)
+					}
+					break
+				}
+			}
+		}
+	}
 }
