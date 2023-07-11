@@ -156,7 +156,7 @@ create unique index "user_email_uindex"
 
 create table "user_logs"
 (
-    log_id        serial
+    id        serial
         primary key,
     log_timestamp timestamp with time zone default CURRENT_TIMESTAMP not null,
     log_data      jsonb,
