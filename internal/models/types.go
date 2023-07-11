@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"github.com/golang-jwt/jwt/v4"
 	"time"
 
 	"App/internal/modules/hash"
@@ -98,6 +99,15 @@ type UserJSON struct {
 	LastName string `json:"lastname"`
 	Role     string `json:"role"`
 	Email    string `json:"email"`
+}
+type TokenClaim struct {
+	Authorized bool `json:"authorized"`
+	jwt.StandardClaims
+}
+
+func (c *TokenClaim) Valid() error {
+	// Ajoutez ici la validation supplémentaire des revendications si nécessaire
+	return c.StandardClaims.Valid()
 }
 
 type userValFunc func(*User) error

@@ -17,7 +17,9 @@ func route(router *chi.Mux, userHandler *Users) {
 
 	router.Patch("/profil/user/{id}", userHandler.Update)
 
-	// router.Patch("/profil/update/{id}", userHandler.UpdateRoles)
+	// router.Get("/{salle}", userHandler.GetRoom)
+
+	// router.Get("/{salle}/{captor}", userHandler.GetCaptorByRoom)
 
 	router.NotFound(notfound)
 }

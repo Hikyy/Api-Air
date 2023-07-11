@@ -1,14 +1,14 @@
 package handlers
 
 import (
+	"App/internal/auth"
+	"App/internal/helpers"
+	"App/internal/models"
+	"App/internal/requests"
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
-
-	"App/internal/helpers"
-	"App/internal/models"
-	"App/internal/requests"
 )
 
 // NewUsers for Parsing new user view/template in signup page
@@ -38,6 +38,14 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		Password:  hashedPassword,
 	}
 
+	token, erro := auth.GenerateJWT(user.Email, user.Id)
+	if erro != nil {
+		fmt.Println(erro)
+	}
+
+	w.Header().Set("Token", token)
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+
 	if err := u.us.Create(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -49,35 +57,44 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// Redirect to other page after the login
-	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	type Test struct {
+		Validite bool
+	}
+	token := r.Header.Get("Token")
+	decoded, err := auth.DecodeJWT(token)
+
 	var form requests.UserLoginRequest
 
 	ProcessRequest(&form, r, w)
 
 	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
+	if err != nil {
+		unvalid := Test{Validite: decoded.Authorized}
+		novalid, _ := json.Marshal(unvalid)
 
+		w.Write(novalid)
+	}
 	fmt.Println("user => ", user, err)
 
 	if err != nil {
-		jsonData, _ := json.Marshal(err)
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(jsonData)
 		return
 	}
 
-	err = u.signIn(w, user)
+	validity := Test{Validite: decoded.Authorized}
+	valid, _ := json.Marshal(validity)
 
+	w.Write(valid)
+
+	err = u.signIn(w, user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Fprintf(w, "Login has been succeeded")
 }
 
 // signIn helps in setting the cookie "email" to the end user
@@ -108,11 +125,8 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	jsonUser, _ := json.Marshal(user)
 
 	fmt.Println(user)
-	w.Write(jsonUser)
-
-	test := u.us.Update(&user, "group_name", "user")
+	test := u.us.Update(&user, "group_name", "admin")
 	testJSON, _ := json.Marshal(test)
 	w.Write(testJSON)
 	w.Write(jsonUser)
-
 }
