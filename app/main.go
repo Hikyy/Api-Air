@@ -21,6 +21,7 @@ func main() {
 		return
 	}
 	defer models.InitGorm.Close()
+
 	handlers.SetMQTT(broker, username, password)
 
 	if err != nil {
