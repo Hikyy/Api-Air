@@ -52,3 +52,4 @@ func SetMQTT(broker string, username string, password string) {
 
 	<-c // Attente de l'interruption du signal (CTRL+C)
 }
+
