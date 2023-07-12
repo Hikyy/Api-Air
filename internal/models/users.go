@@ -54,8 +54,8 @@ func (ug *DbGorm) Update(entity interface{}, attribute string, value string) err
 		return ErrInvalidID
 	}
 	id := strconv.Itoa(idField.Interface().(int))
-	fmt.Println(ug.db.Model(&entity).Where("id = ?", id).Update(attribute, value).Error)
 	return ug.db.Model(&entity).Clauses(clause.Returning{Columns: []clause.Column{{Name: "group_name"}}}).Where("id = ?", id).Update(attribute, value).Error
+
 }
 
 // Authenticate Method is used for Authenticate and Validate login

@@ -40,7 +40,7 @@ func DecodeJWT(token string) (*models.TokenClaim, error) {
 	})
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("errrrrrrrrrr => ", err)
 		return nil, err
 	}
 

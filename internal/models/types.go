@@ -90,7 +90,7 @@ type User struct {
 
 //	type UserJSON struct {
 //		Name     string `json:"User_firstname"`
-//		LastName string `json:"User_lastname"`
+//		LastName string `json:"User_lastname"
 //		Role     string `json:"Group_name"`
 //	}
 type Sensors struct {

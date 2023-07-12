@@ -38,6 +38,8 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		Password:  hashedPassword,
 	}
 
+	helpers.FillStruct(requests.StoreUserRequest{}, models.User{})
+
 	token, erro := auth.GenerateJWT(user.Email, user.Id)
 	if erro != nil {
 		fmt.Println(erro)
@@ -66,7 +68,15 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		Validite bool
 	}
 	token := r.Header.Get("Token")
-	decoded, err := auth.DecodeJWT(token)
+	decoded, erro := auth.DecodeJWT(token)
+	//
+	//unvalid := Test{Validite: decoded.Authorized}
+	//novalid, _ := json.Marshal(unvalid)
+
+	if erro != nil {
+
+		return
+	}
 
 	var form requests.UserLoginRequest
 
@@ -74,14 +84,11 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
 	if err != nil {
-		unvalid := Test{Validite: decoded.Authorized}
-		novalid, _ := json.Marshal(unvalid)
 
-		w.Write(novalid)
 	}
 	fmt.Println("user => ", user, err)
-
 	if err != nil {
+
 		return
 	}
 
