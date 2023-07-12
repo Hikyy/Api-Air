@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-var (
-	broker   = "mqtt://mqtt.arcplex.fr:2295"
-	username = "groupe9"
-	password = "Pu3a76ZS0pgT"
-)
+//var (
+//	broker   = "mqtt://mqtt.arcplex.fr:2295"
+//	username = "groupe7"
+//	password = "5zGF9R8H9sSl"
+//)
 
 func main() {
 
@@ -22,7 +22,7 @@ func main() {
 	}
 	defer models.InitGorm.Close()
 
-	handlers.SetMQTT(broker, username, password)
+	//handlers.SetMQTT(broker, username, password)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
