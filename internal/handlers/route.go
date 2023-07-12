@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"App/internal/middlewares"
 	"fmt"
 	"net/http"
 
@@ -13,13 +14,16 @@ func route(router *chi.Mux, userHandler *Users) {
 
 	router.Post("/login", userHandler.Login)
 
-	router.Get("/profil", userHandler.GetAll)
+	// Groupe de routes protégées par le middleware d'authentification
 
-	router.Patch("/profil/user/{id}", userHandler.Update)
+	router.Group(func(r chi.Router) {
+		// Middleware d'authentification
+		r.Use(middlewares.CheckMJWTValidity)
 
-	// router.Get("/{salle}", userHandler.GetRoom)
-
-	// router.Get("/{salle}/{captor}", userHandler.GetCaptorByRoom)
+		// Routes protégées
+		r.Get("/profil", userHandler.GetAll)
+		r.Patch("/profil/user/{id}", userHandler.Update)
+	})
 
 	router.NotFound(notfound)
 }

@@ -14,7 +14,7 @@ import (
 
 var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 	fmt.Printf("Message %s received on topic %s\n", msg.Payload(), msg.Topic())
-	var message models.LightData
+	var message models.Data
 
 	err := json.Unmarshal(msg.Payload(), &message)
 	if err != nil {
@@ -22,6 +22,11 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 		return
 	}
 	fmt.Println(err)
+	fmt.Println("Source Adresse => ", message.SourceAdresse)
+	fmt.Println("Sensor Id => ", message.SensorId)
+	fmt.Println("Time => ", message.Time)
+	fmt.Println("Data  => ", message.Data.Data)
+
 }
 
 func SetMQTT(broker string, username string, password string) {
@@ -52,4 +57,3 @@ func SetMQTT(broker string, username string, password string) {
 
 	<-c // Attente de l'interruption du signal (CTRL+C)
 }
-

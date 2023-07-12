@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
+	"net/http"
 	"time"
 
 	"App/internal/modules/hash"
@@ -99,6 +100,10 @@ type Sensors struct {
 	Data string `gorm:"type:json"`
 }
 
+type Success struct {
+	Success bool `json:"success"`
+}
+
 type UserJSON struct {
 	Name     string `json:"name"`
 	LastName string `json:"lastname"`
@@ -110,9 +115,28 @@ type TokenClaim struct {
 	jwt.StandardClaims
 }
 
+type TokenValidity struct {
+	CookieValidité bool
+}
+
+type TokenValidityToken struct {
+	CookieValidité bool
+	Cookie         *http.Cookie
+}
+
 func (c *TokenClaim) Valid() error {
 	// Ajoutez ici la validation supplémentaire des revendications si nécessaire
 	return c.StandardClaims.Valid()
+}
+
+var Cookie = http.Cookie{
+	Name:     "TokenBearer",
+	Value:    "",
+	Path:     "/",
+	Expires:  time.Now().Add(time.Minute * 2500),
+	HttpOnly: true,
+	Secure:   true,
+	SameSite: http.SameSiteLaxMode,
 }
 
 type userValFunc func(*User) error

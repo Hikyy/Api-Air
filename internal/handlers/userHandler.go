@@ -21,6 +21,10 @@ func NewUsers(us models.EntityImplementService) *Users {
 // Methode create pour ajotuer new user "POST / signup"
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var form requests.StoreUserRequest
+
+	success := models.Success{Success: true}
+	successStatus, _ := json.Marshal(success)
+
 	// tx := models.GetTransaction(r.Context())
 
 	errPayload := ProcessRequest(&form, r, w)
@@ -38,66 +42,44 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		Password:  hashedPassword,
 	}
 
-	helpers.FillStruct(requests.StoreUserRequest{}, models.User{})
-
-	token, erro := auth.GenerateJWT(user.Email, user.Id)
-	if erro != nil {
-		fmt.Println(erro)
-	}
-
-	w.Header().Set("Token", token)
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 
 	if err := u.us.Create(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		success = models.Success{Success: false}
+		successStatus, _ = json.Marshal(success)
+		w.Write(successStatus)
+		//http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err := u.signIn(w, &user)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	w.Write(successStatus)
 }
 
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	type Test struct {
-		Validite bool
-	}
-	token := r.Header.Get("Token")
-	decoded, erro := auth.DecodeJWT(token)
-	//
-	//unvalid := Test{Validite: decoded.Authorized}
-	//novalid, _ := json.Marshal(unvalid)
-
-	if erro != nil {
-
-		return
-	}
-
 	var form requests.UserLoginRequest
 
 	ProcessRequest(&form, r, w)
+	success := models.Success{Success: true}
+	successStatus, _ := json.Marshal(success)
 
 	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
 	if err != nil {
-
+		success = models.Success{Success: false}
+		successStatus, _ = json.Marshal(success)
+		w.Write(successStatus)
+		fmt.Println(err)
 	}
+
 	fmt.Println("user => ", user, err)
 	if err != nil {
 
 		return
 	}
+	cookie := u.signIn(w, user)
+	http.SetCookie(w, &cookie)
+	w.Write(successStatus)
 
-	validity := Test{Validite: decoded.Authorized}
-	valid, _ := json.Marshal(validity)
-
-	w.Write(valid)
-
-	err = u.signIn(w, user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -105,15 +87,17 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 // signIn helps in setting the cookie "email" to the end user
-func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
-
-	cookie := http.Cookie{
-		Name: "remember_token",
-		// Value:    user.Remember,
-		HttpOnly: true, // means that it is not accessible to scripts "to protect against XSS"
+func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
+	token, err := auth.GenerateJWT(user.Email)
+	fmt.Println(user.Email)
+	fmt.Println("methode signIn =>", token)
+	if err != nil {
+		fmt.Println(err)
 	}
-	http.SetCookie(w, &cookie)
-	return nil
+	cookie := models.Cookie
+	cookie.Value = token
+
+	return cookie
 }
 
 func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
