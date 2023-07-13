@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func SetupRouter() http.Handler {
@@ -18,6 +19,13 @@ func SetupRouter() http.Handler {
 	// router.Use(middlewares.TransactionMiddleware(models.InitGorm))
 
 	// router.Use(middlewares.TransactionMiddleware)
+
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+	})
+
+	router.Use(cors.Handler)
 
 	userHandler := NewUsers(models.Db)
 
