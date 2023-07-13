@@ -54,42 +54,51 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	w.Write(successStatus)
 }
 
+type response struct {
+    Success bool                 `json:"success"`
+    Data    models.UserReturn    `json:"data"`
+}
+
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var form requests.UserLoginRequest
+    w.Header().Set("Content-Type", "application/json")
+    var form requests.UserLoginRequest
 
-	ProcessRequest(&form, r, w)
-	success := models.Success{Success: true}
-	successStatus, _ := json.Marshal(success)
+    ProcessRequest(&form, r, w)
 
-	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
-	if err != nil {
-		fmt.Println("user => ", user, "err =>>>>", err)
+    user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
+    if err != nil {
+        fmt.Println("user => ", user, "err =>>>>", err)
 
-		success = models.Success{Success: false}
-		successStatus, _ = json.Marshal(success)
-		w.Write(successStatus)
-		fmt.Println(err)
-		return
-	}
+        success := models.Success{Success: false}
+        successStatus, _ := json.Marshal(success)
+        w.Write(successStatus)
+        fmt.Println(err)
+        return
+    }
 
-	returnFront := models.UserReturn{
-		Firstname: user.Firstname,
-		Lastname:  user.Lastname,
-		Email:     user.Email,
-	}
+    returnFront := models.UserReturn{
+        Firstname: user.Firstname,
+        Lastname:  user.Lastname,
+        Email:     user.Email,
+    }
 
-	test, _ := json.Marshal(returnFront)
+    // Create a new response object and fill it with data
+    resp := response{
+        Success: true,
+        Data:    returnFront,
+    }
 
-	cookie := u.signIn(w, user)
-	http.SetCookie(w, &cookie)
-	w.Write(successStatus)
-	w.Write(test)
+    // Marshal the response object into JSON
+    respJson, _ := json.Marshal(resp)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    cookie := u.signIn(w, user)
+    http.SetCookie(w, &cookie)
+    w.Write(respJson) // Send the response
+
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
 
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
