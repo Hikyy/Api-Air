@@ -51,7 +51,6 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		//http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.Write(successStatus)
 }
 
@@ -72,6 +71,14 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("user => ", user, err)
+
+	returnFront := models.UserReturn{
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Email:     user.Email,
+	}
+	test, _ := json.Marshal(returnFront)
+
 	if err != nil {
 
 		return
@@ -79,6 +86,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	cookie := u.signIn(w, user)
 	http.SetCookie(w, &cookie)
 	w.Write(successStatus)
+	w.Write(test)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -86,7 +94,6 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// signIn helps in setting the cookie "email" to the end user
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
 	token, err := auth.GenerateJWT(user.Email)
 	fmt.Println(user.Email)

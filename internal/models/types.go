@@ -139,4 +139,10 @@ var Cookie = http.Cookie{
 	SameSite: http.SameSiteLaxMode,
 }
 
+type UserReturn struct {
+	Firstname string
+	Lastname  string
+	Email     string
+}
+
 type userValFunc func(*User) error
