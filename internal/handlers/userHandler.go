@@ -64,25 +64,23 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
 	if err != nil {
+		fmt.Println("user => ", user, "err =>>>>", err)
+
 		success = models.Success{Success: false}
 		successStatus, _ = json.Marshal(success)
 		w.Write(successStatus)
 		fmt.Println(err)
+		return
 	}
-
-	fmt.Println("user => ", user, err)
 
 	returnFront := models.UserReturn{
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
 		Email:     user.Email,
 	}
+
 	test, _ := json.Marshal(returnFront)
 
-	if err != nil {
-
-		return
-	}
 	cookie := u.signIn(w, user)
 	http.SetCookie(w, &cookie)
 	w.Write(successStatus)
@@ -109,6 +107,7 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
 
 func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
 	users, _ := u.us.GetAllUsers()
+
 	w.Write(users)
 }
 
