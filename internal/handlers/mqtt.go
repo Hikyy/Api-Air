@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"App/internal/config"
 	"App/internal/models"
 	"encoding/json"
 	"fmt"
@@ -11,11 +12,15 @@ import (
 	"time"
 )
 
+//func (dt *Datas) Test(w http.ResponseWriter, r *http.Request) {
+//
+//	dt.dts.Create()
+//}
+
 var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
-	fmt.Printf("Messageeeeeeee %s received on topic %s\n", msg.Payload(), msg.Topic())
-
+	//fmt.Printf("Messageeeeeeee %s received on topic %s\n", msg.Payload(), msg.Topic())
+	//Test()
 	var jsonString = msg.Payload()
-
 	var sensorData models.SensorData
 	err := json.Unmarshal([]byte(jsonString), &sensorData)
 	if err != nil {
@@ -26,9 +31,11 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	fmt.Println("SensorAddress :", sensorData.SensorAddress)
 	fmt.Println("SensorID:", sensorData.SensorID)
 	fmt.Println("TimeEpoch  :", sensorData.TimeEpoch)
+
 	for key, value := range sensorData.Data {
 		fmt.Printf("%s: %v\n", key, value)
 	}
+
 }
 
 func SetMQTT(broker string, username string, password string) {
@@ -40,25 +47,25 @@ func SetMQTT(broker string, username string, password string) {
 	opts.SetUsername(username)
 	opts.SetPassword(password)
 	opts.SetDefaultPublishHandler(MessagePubHandler)
+	opts.SetOrderMatters(true)
 	client := MQTT.NewClient(opts)
+
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatal(token.Error())
 	}
-
 	time.Sleep(time.Second)
-	topic := []string{
-		"groupe9/packet/5e178fd2-5321-4cf5-b04c-4c6a8a827d88/db0b2380-acf0-4688-b219-04ad29c369f3/104",
-		"groupe9/packet/a95cec4a-8aaf-4204-9fa2-b6c4aa8779e7/5072c2d9-cd1b-4e3d-aedb-9ddf19b25abc/131",
-		"groupe9/packet/1ac45e2c-2bc2-4027-a7f6-0dbcafcad53b/42d166ae-94b8-4445-b122-91fbc77bb3c1/118"}
-	for _, topic := range topic {
-		if token := client.Subscribe(topic, 0, MessagePubHandler); token.Wait() && token.Error() != nil {
-			fmt.Printf("Error subscribing to topic %s: %v\n", topic, token.Error())
-		} else {
-			//fmt.Printf("Subscribed to topic: %s\n", topic)
+	topics := config.Salles
+
+	for key, value := range topics {
+		for keySensor, valueSensor := range value {
+			request := key + keySensor + valueSensor
+			if token := client.Subscribe(request, 0, MessagePubHandler); token.Wait() && token.Error() != nil {
+				fmt.Printf("Error subscribing to topic %s: %v\n", request, token.Error())
+			} else {
+				fmt.Printf("Subscribed to topic: %s\n", request)
+			}
 		}
 	}
-
-	//log.Printf("Connecté au broker MQTT %s et abonné au topic %s\n ", broker, topic)
 
 	<-c // Attente de l'interruption du signal (CTRL+C)
 }
