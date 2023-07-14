@@ -9,8 +9,8 @@ import (
 
 var (
 	broker   = "mqtt://mqtt.arcplex.fr:2295"
-	username = "groupe7"
-	password = "5zGF9R8H9sSl"
+	username = "groupe9"
+	password = "Pu3a76ZS0pgT"
 )
 
 func main() {
