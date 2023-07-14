@@ -2,40 +2,50 @@ package handlers
 
 import (
 	"App/internal/config"
+	"App/internal/helpers"
 	"App/internal/models"
 	"encoding/json"
 	"fmt"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
 )
 
-//func (dt *Datas) Test(w http.ResponseWriter, r *http.Request) {
-//
-//	dt.dts.Create()
-//}
-
 var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 	//fmt.Printf("Messageeeeeeee %s received on topic %s\n", msg.Payload(), msg.Topic())
 	//Test()
+
 	var jsonString = msg.Payload()
 	var sensorData models.SensorData
+	var sensorDatatoDb models.SensorDataToDb
 	err := json.Unmarshal([]byte(jsonString), &sensorData)
 	if err != nil {
 		fmt.Println("Erreur lors de la désérialisation JSON:", err)
 		return
 	}
-
-	fmt.Println("SensorAddress :", sensorData.SensorAddress)
-	fmt.Println("SensorID:", sensorData.SensorID)
-	fmt.Println("TimeEpoch  :", sensorData.TimeEpoch)
-
-	for key, value := range sensorData.Data {
-		fmt.Printf("%s: %v\n", key, value)
+	datas := &Datas{
+		dts: models.Db, // Initialisez le champ dts avec l'objet approprié
+	}
+	var prout = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
+		return dt.dts.AddDataToDb(data), nil
 	}
 
+	//fmt.Println("SensorAddress :", sensorData.SensorAddress)
+	fmt.Println("SensorID:", sensorData.SensorID)
+	fmt.Println("TimeEpoch  :", helpers.TimeStampConverter(sensorData.EventTimestamp))
+	converted := helpers.TimeStampConverter(sensorData.EventTimestamp)
+
+	sensorDatatoDb.SensorID = sensorData.SensorID
+	sensorDatatoDb.EventTimestamp = converted
+	sensorDatatoDb.EventData = sensorData.Data
+
+	for key, value := range sensorData.Data {
+		prout(datas, &sensorDatatoDb)
+		fmt.Printf("%s: %v\n", key, value)
+	}
 }
 
 func SetMQTT(broker string, username string, password string) {
