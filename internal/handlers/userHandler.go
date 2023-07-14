@@ -22,7 +22,9 @@ func NewUsers(us models.EntityImplementService) *Users {
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var form requests.StoreUserRequest
 
-	success := models.Success{Success: true}
+	//success := models.Success{Success: true}
+	success := models.Success{}
+
 	successStatus, _ := json.Marshal(success)
 
 	// tx := models.GetTransaction(r.Context())
@@ -55,50 +57,50 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 type response struct {
-    Success bool                 `json:"success"`
-    Data    models.UserReturn    `json:"data"`
+	Success bool              `json:"success"`
+	Data    models.UserReturn `json:"data"`
 }
 
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-    var form requests.UserLoginRequest
+	w.Header().Set("Content-Type", "application/json")
+	var form requests.UserLoginRequest
 
-    ProcessRequest(&form, r, w)
+	ProcessRequest(&form, r, w)
 
-    user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
-    if err != nil {
-        fmt.Println("user => ", user, "err =>>>>", err)
+	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
+	if err != nil {
+		fmt.Println("user => ", user, "err =>>>>", err)
 
-        success := models.Success{Success: false}
-        successStatus, _ := json.Marshal(success)
-        w.Write(successStatus)
-        fmt.Println(err)
-        return
-    }
+		success := models.Success{Success: false}
+		successStatus, _ := json.Marshal(success)
+		w.Write(successStatus)
+		fmt.Println(err)
+		return
+	}
 
-    returnFront := models.UserReturn{
-        Firstname: user.Firstname,
-        Lastname:  user.Lastname,
-        Email:     user.Email,
-    }
+	returnFront := models.UserReturn{
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Email:     user.Email,
+	}
 
-    // Create a new response object and fill it with data
-    resp := response{
-        Success: true,
-        Data:    returnFront,
-    }
+	// Create a new response object and fill it with data
+	resp := response{
+		Success: true,
+		Data:    returnFront,
+	}
 
-    // Marshal the response object into JSON
-    respJson, _ := json.Marshal(resp)
+	// Marshal the response object into JSON
+	respJson, _ := json.Marshal(resp)
 
-    cookie := u.signIn(w, user)
-    http.SetCookie(w, &cookie)
-    w.Write(respJson) // Send the response
+	cookie := u.signIn(w, user)
+	http.SetCookie(w, &cookie)
+	w.Write(respJson) // Send the response
 
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
@@ -116,7 +118,6 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
 
 func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
 	users, _ := u.us.GetAllUsers()
-
 	w.Write(users)
 }
 

@@ -20,11 +20,11 @@ func CheckMJWTValidity(next http.Handler) http.Handler {
 
 		cookie, err := r.Cookie("TokenBearer")
 
-		successAndCookie := models.TokenValidityToken{CookieValidité: true, Cookie: cookie}
+		successAndCookie := models.TokenValidityToken{Jwt: true, Cookie: cookie}
 		successStatus, _ := json.Marshal(successAndCookie)
 
 		if err != nil {
-			success := models.TokenValidity{CookieValidité: false}
+			success := models.TokenValidity{Jwt: false}
 			successStatus, _ = json.Marshal(success)
 			w.Write(successStatus)
 			return
@@ -34,5 +34,3 @@ func CheckMJWTValidity(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// ici j'implementerais le middleWare présent sur mon windows

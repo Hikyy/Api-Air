@@ -22,7 +22,9 @@ func route(router *chi.Mux, userHandler *Users) {
 
 		// Routes protégées
 		r.Get("/profil", userHandler.GetAll)
+		//r.Get("/dashboard")
 		r.Patch("/profil/user/{id}", userHandler.Update)
+		r.Get("/getDatas", userHandler.Create)
 	})
 
 	router.NotFound(notfound)

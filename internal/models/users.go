@@ -96,3 +96,7 @@ func (ug *DbGorm) GetAllUsers() ([]byte, error) {
 	}
 	return jsonData, nil
 }
+
+func (ug *DbGorm) AddDataToDb(entity interface{}) error {
+	return ug.db.Table("sensor_events").Create(entity).Error
+}

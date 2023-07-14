@@ -1,15 +1,13 @@
 package models
 
 import (
+	"App/internal/modules/hash"
 	"database/sql"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
-
-	"App/internal/modules/hash"
-
-	"gorm.io/gorm"
 )
 
 var (
@@ -45,6 +43,7 @@ type EntityDB interface {
 	Ping() error
 
 	GetAllUsers() ([]byte, error)
+	AddDataToDb(entity interface{}) error
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -89,15 +88,15 @@ type User struct {
 	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
 
-//	type UserJSON struct {
-//		Name     string `json:"User_firstname"`
-//		LastName string `json:"User_lastname"
-//		Role     string `json:"Group_name"`
-//	}
 type Sensors struct {
-	gorm.Model
-	Name string
-	Data string `gorm:"type:json"`
+	EventTimestamp string `gorm:"type:timestamp"`
+	EventData      string `gorm:"type:jsonb"`
+	//SensorId       []Sensor `gorm:"foreignKey:SensorId"`
+}
+
+// supprimer le floor ca sert a bitchhhhhhhhhhh
+type Rooms struct {
+	RoomNumber int `gorm:"column:room_id"`
 }
 
 type Success struct {
@@ -110,18 +109,19 @@ type UserJSON struct {
 	Role     string `json:"role"`
 	Email    string `json:"email"`
 }
+
 type TokenClaim struct {
 	Authorized bool `json:"authorized"`
 	jwt.StandardClaims
 }
 
 type TokenValidity struct {
-	CookieValidité bool
+	Jwt bool
 }
 
 type TokenValidityToken struct {
-	CookieValidité bool
-	Cookie         *http.Cookie
+	Jwt    bool
+	Cookie *http.Cookie
 }
 
 func (c *TokenClaim) Valid() error {

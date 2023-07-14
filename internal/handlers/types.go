@@ -10,3 +10,7 @@ type Users struct {
 	Password string `schema:"password"`
 	us       models.EntityImplementService
 }
+
+type Datas struct {
+	dts models.EntityDB
+}
