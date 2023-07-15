@@ -40,10 +40,15 @@ func main() {
 
 	router := handlers.SetupRouter()
 
+	customRouter := &handlers.CustomRouter{
+		Router: router,
+		C:      c,
+	}
+
 	fmt.Println("Server listening on port 8097")
 
 	// err = godotenv.Load()
 
-	http.ListenAndServe(":8097", router)
+	http.ListenAndServe(":8097", customRouter)
 
 }
