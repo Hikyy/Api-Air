@@ -127,18 +127,6 @@ create table "sensor_events"
     sensor_id       integer                  not null
         references "sensors"
 );
-CREATE OR REPLACE FUNCTION notify_sensor_event()
-  RETURNS TRIGGER AS $$
-BEGIN
-  PERFORM pg_notify('sensor_event_inserted', 'New Entry');
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER sensor_event_trigger
-    AFTER INSERT ON sensor_events
-    FOR EACH ROW
-    EXECUTE FUNCTION notify_sensor_event();
 
 alter table "sensor_events"
     owner to postgres;
@@ -278,3 +266,40 @@ create table "automation_conditions"
 
 alter table "automation_conditions"
     owner to postgres;
+
+CREATE OR REPLACE FUNCTION notify_event() RETURNS TRIGGER AS $$
+
+    DECLARE
+data json;
+        notification json;
+
+BEGIN
+
+        -- Convert the old or new row to JSON, based on the kind of action.
+        -- Action = DELETE?             -> OLD row
+        -- Action = INSERT or UPDATE?   -> NEW row
+        IF (TG_OP = 'CREATE') THEN
+            data = row_to_json(OLD);
+ELSE
+            data = row_to_json(NEW);
+END IF;
+
+        -- Contruct the notification as a JSON string.
+        notification = json_build_object(
+                          'table',TG_TABLE_NAME,
+                          'action', TG_OP,
+                          'data', data);
+
+
+        -- Execute pg_notify(channel, notification)
+        PERFORM pg_notify('events',notification::text);
+
+        -- Result is ignored since this is an AFTER trigger
+RETURN NULL;
+END;
+
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER products_notify_event
+    AFTER INSERT OR UPDATE OR DELETE ON sensor_events
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
