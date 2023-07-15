@@ -22,8 +22,7 @@ func main() {
 	}
 	defer models.InitGorm.Close()
 
-	//handlers.SetWebSocket()
-
+	handlers.StartSQL()
 	//handlers.SetMQTT(broker, username, password)
 
 	if err != nil {
