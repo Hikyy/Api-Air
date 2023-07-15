@@ -26,10 +26,11 @@ func main() {
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-	//
+
 	//go handlers.StartSQL(c)
 	//go handlers.SetMQTT(broker, username, password, c)
 
+	//
 	//handlers.StartSQL()
 	//handlers.SetMQTT(broker, username, password)
 
@@ -50,5 +51,4 @@ func main() {
 	// err = godotenv.Load()
 
 	http.ListenAndServe(":8097", customRouter)
-
 }
