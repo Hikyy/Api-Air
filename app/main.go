@@ -5,6 +5,8 @@ import (
 	"App/internal/models"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 )
 
 var (
@@ -22,7 +24,13 @@ func main() {
 	}
 	defer models.InitGorm.Close()
 
-	handlers.StartSQL()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	go handlers.StartSQL(c)
+	go handlers.SetMQTT(broker, username, password, c)
+
+	//handlers.StartSQL()
 	//handlers.SetMQTT(broker, username, password)
 
 	if err != nil {
