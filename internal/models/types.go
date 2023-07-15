@@ -4,10 +4,11 @@ import (
 	"App/internal/modules/hash"
 	"database/sql"
 	"errors"
-	"github.com/golang-jwt/jwt/v4"
-	"gorm.io/gorm"
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm"
 )
 
 var (
@@ -146,3 +147,9 @@ type UserReturn struct {
 }
 
 type userValFunc func(*User) error
+type Message struct {
+	CmdID              string `json:"cmd_id"`
+	DestinationAddress string `json:"destination_address"`
+	Ack_Flags          string `json:"ack_flags"`
+	Cmd_Type           string `json:"cmd_type"`
+}

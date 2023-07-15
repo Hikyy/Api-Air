@@ -23,6 +23,7 @@ func main() {
 	defer models.InitGorm.Close()
 
 	handlers.SetMQTT(broker, username, password)
+	handlers.SendRequest(handlers.Client)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
