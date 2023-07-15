@@ -14,17 +14,14 @@ func route(router *chi.Mux, userHandler *Users) {
 
 	router.Post("/login", userHandler.Login)
 
-	// Groupe de routes protégées par le middleware d'authentification
-
 	router.Group(func(r chi.Router) {
 		// Middleware d'authentification
 		r.Use(middlewares.CheckMJWTValidity)
 
 		// Routes protégées
 		r.Get("/profil", userHandler.GetAll)
-		//r.Get("/dashboard")
 		r.Patch("/profil/user/{id}", userHandler.Update)
-		r.Get("/getDatas", userHandler.Create)
+		r.Get("/getDatas", userHandler.GetDatasFromDates)
 	})
 
 	router.NotFound(notfound)

@@ -44,6 +44,7 @@ type EntityDB interface {
 
 	GetAllUsers() ([]byte, error)
 	AddDataToDb(entity interface{}) error
+	GetDataFromDate(start string, end string) ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -83,31 +84,13 @@ type User struct {
 	Lastname   string
 	Email      string    `gorm:"not null;unique_index"`
 	Password   string    `gorm:"no null"` // Ne pas store dans la database
-	Group_name string    `gorm:"default:'admin'"`
+	Group_name string    `gorm:"default:'administrator'"`
 	CreatedAt  time.Time `gorm:"type:timestamp"`
 	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
 
-type Sensors struct {
-	EventTimestamp string `gorm:"type:timestamp"`
-	EventData      string `gorm:"type:jsonb"`
-	//SensorId       []Sensor `gorm:"foreignKey:SensorId"`
-}
-
-// supprimer le floor ca sert a bitchhhhhhhhhhh
-type Rooms struct {
-	RoomNumber int `gorm:"column:room_id"`
-}
-
 type Success struct {
 	Success bool `json:"success"`
-}
-
-type UserJSON struct {
-	Name     string `json:"name"`
-	LastName string `json:"lastname"`
-	Role     string `json:"role"`
-	Email    string `json:"email"`
 }
 
 type TokenClaim struct {
@@ -143,6 +126,12 @@ type UserReturn struct {
 	Firstname string
 	Lastname  string
 	Email     string
+}
+
+type SensorDatas struct {
+	EventTimestamp time.Time              `json:"tx_time_ms_epoch"`
+	EventData      map[string]interface{} `json:"data" gorm:"json"`
+	SensorID       int                    `json:"sensor_id"`
 }
 
 type userValFunc func(*User) error

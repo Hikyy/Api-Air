@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"strings"
 )
 
 // NewUsers for Parsing new user view/template in signup page
@@ -132,8 +133,24 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	jsonUser, _ := json.Marshal(user)
 
 	fmt.Println(user)
-	test := u.us.Update(&user, "group_name", "admin")
-	testJSON, _ := json.Marshal(test)
-	w.Write(testJSON)
+	sendToDb := u.us.Update(&user, "group_name", "admin")
+	sendToDbJson, _ := json.Marshal(sendToDb)
+	w.Write(sendToDbJson)
 	w.Write(jsonUser)
+}
+
+func (u *Users) GetDatasFromDates(w http.ResponseWriter, r *http.Request) {
+	start := r.URL.Query().Get("start")
+	end := r.URL.Query().Get("end")
+
+	start = strings.Replace(start, "_", " ", -1)
+	end = strings.Replace(end, "_", " ", -1)
+
+	fmt.Println(start, end)
+
+	datas, err := u.us.GetDataFromDate(start, end)
+	if err != nil {
+		fmt.Println("problèmeeeeeee => ", err)
+	}
+	w.Write(datas)
 }
