@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
-	"strings"
 )
 
 // NewUsers for Parsing new user view/template in signup page
@@ -140,15 +139,22 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *Users) GetDatasFromDates(w http.ResponseWriter, r *http.Request) {
-	start := r.URL.Query().Get("start")
-	end := r.URL.Query().Get("end")
+	day := r.URL.Query().Get("day")
 
-	start = strings.Replace(start, "_", " ", -1)
-	end = strings.Replace(end, "_", " ", -1)
+	// FAIRE UNE REGLE QUAND ON AURA LES DATAS FINALES
+	// POUR QUE L'ON NE PUISSE PAS ENTRER UNE VALEUR QUI N'EXISTE PAS
+	// EN GROS SI < DATE MIN START = DATE MIN
+	// SI > DATE MAX END = DATE MAX
 
-	fmt.Println(start, end)
+	start, err := helpers.ConvertStringToStartOfDay(day)
+	startString, _ := start.MarshalText()
 
-	datas, err := u.us.GetDataFromDate(start, end)
+	end, err := helpers.ConvertStringToEndOfDay(day)
+	endString, _ := end.MarshalText()
+
+	fmt.Printf("%s     %s", startString, endString)
+
+	datas, err := u.us.GetDataFromDate(string(startString), string(endString))
 	if err != nil {
 		fmt.Println("problèmeeeeeee => ", err)
 	}

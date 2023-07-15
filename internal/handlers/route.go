@@ -22,6 +22,7 @@ func route(router *chi.Mux, userHandler *Users) {
 		r.Get("/profil", userHandler.GetAll)
 		r.Patch("/profil/user/{id}", userHandler.Update)
 		r.Get("/getDatas", userHandler.GetDatasFromDates)
+		//r.Post("/actions/{actions}",)
 	})
 
 	router.NotFound(notfound)

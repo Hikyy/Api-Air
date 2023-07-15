@@ -102,8 +102,10 @@ func (ug *DbGorm) AddDataToDb(entity interface{}) error {
 }
 
 func (ug *DbGorm) GetDataFromDate(start string, end string) ([]byte, error) {
+
 	var datas []SensorDatas
-	db := ug.db.Table("sensor_events").Where("event_timestamp BETWEEN ? AND ?", start, end).Find(&datas)
+
+	db := ug.db.Table("sensor_events").Where("event_timestamp >= ? AND event_timestamp <= ?", start, end).Find(&datas)
 	if db.Error != nil {
 		fmt.Println(db.Error)
 		return nil, db.Error
