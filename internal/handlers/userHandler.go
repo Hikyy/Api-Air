@@ -23,7 +23,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var form requests.StoreUserRequest
 
 	//success := models.Success{Success: true}
-	success := models.Success{}
+	success := models.Success{Success: true}
 
 	successStatus, _ := json.Marshal(success)
 
