@@ -21,6 +21,7 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	var jsonString = msg.Payload()
 	var sensorData models.SensorData
 	var sensorDatatoDb models.SensorDataToDb
+	fmt.Println("cc")
 	err := json.Unmarshal([]byte(jsonString), &sensorData)
 	if err != nil {
 		fmt.Println("Erreur lors de la désérialisation JSON:", err)
@@ -29,6 +30,7 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	datas := &Datas{
 		dts: models.Db, // Initialisez le champ dts avec l'objet approprié
 	}
+	fmt.Println("caca")
 	var prout = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
 		return dt.dts.AddDataToDb(data), nil
 	}

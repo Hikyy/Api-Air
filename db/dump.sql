@@ -127,6 +127,18 @@ create table "sensor_events"
     sensor_id       integer                  not null
         references "sensors"
 );
+CREATE OR REPLACE FUNCTION notify_sensor_event()
+  RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify('sensor_event_inserted', 'New Entry');
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER sensor_event_trigger
+    AFTER INSERT ON sensor_events
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_sensor_event();
 
 alter table "sensor_events"
     owner to postgres;
