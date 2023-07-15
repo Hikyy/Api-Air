@@ -5,6 +5,8 @@ import (
 	"App/internal/models"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 )
 
 var (
@@ -22,8 +24,9 @@ func main() {
 	}
 	defer models.InitGorm.Close()
 
-	handlers.SetMQTT(broker, username, password)
-	handlers.SendRequest(handlers.Client)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	handlers.SetMQTT(broker, username, password, c)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)

@@ -50,8 +50,10 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	}
 }
 
-func SetMQTT(broker string, username string, password string) {
-	c := make(chan os.Signal, 1)
+// Subsrib au Topic
+
+func SetMQTT(broker string, username string, password string, c chan os.Signal) {
+	c = make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	opts := MQTT.NewClientOptions()
@@ -78,9 +80,9 @@ func SetMQTT(broker string, username string, password string) {
 			}
 		}
 	}
-
-	<-c // Attente de l'interruption du signal (CTRL+C)
 }
+
+// Envoie de Reqête
 func SendRequest(client MQTT.Client) {
 	// set le type Message
 	groupe := "groupe9"
