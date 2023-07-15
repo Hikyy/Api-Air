@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/lib/pq"
+	"os"
 	"time"
 )
 
@@ -72,7 +73,7 @@ var (
 //	}
 //
 // }
-func StartSQL() {
+func StartSQL(c chan os.Signal) {
 	//var conninfo string = "dbname=exampledb user=webapp password=webapp"
 	conninfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, dbuser, password, dbname)
 
