@@ -213,7 +213,7 @@ alter table "scene_actions"
 
 create table "automations"
 (
-    automation_id   integer default nextval('automations_automation_id_seq'::regclass) not null
+    id   integer default nextval('automations_automation_id_seq'::regclass) not null
         primary key,
     automation_name varchar(255)                                                       not null
 );

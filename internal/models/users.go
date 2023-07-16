@@ -193,3 +193,15 @@ func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end st
 func (ug *DbGorm) AddActuators(entity interface{}) error {
 	return ug.db.Table("automations").Create(entity).Error
 }
+
+func (ug *DbGorm) GetAllAutomations() ([]byte, error) {
+	var automations []Automations
+
+	db := ug.db.Table("automations").Order("id").Find(&automations)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+
+	jsonData, _ := json.Marshal(automations)
+	return jsonData, nil
+}

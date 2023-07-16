@@ -50,6 +50,7 @@ type EntityDB interface {
 	GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error)
 	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
 	AddActuators(entity interface{}) error
+	GetAllAutomations() ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model

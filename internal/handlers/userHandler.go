@@ -276,3 +276,7 @@ func (u *Users) StoreAutoMations(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(successStatus)
 }
+func (u *Users) IndexAutomations(w http.ResponseWriter, r *http.Request) {
+	datas, _ := u.us.GetAllAutomations()
+	w.Write(datas)
+}
