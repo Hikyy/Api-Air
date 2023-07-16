@@ -20,7 +20,7 @@ func Postgres() map[string]string {
 
 	var (
 		host     = "localhost"
-		port     = "3307"
+		port     = "5432"
 		dbuser   = "root"
 		password = "root"
 		dbname   = "postgres"
