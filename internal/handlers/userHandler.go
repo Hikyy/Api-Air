@@ -192,3 +192,23 @@ func (u *Users) getAllDatasbyRooms(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(datas)
 }
+
+func (u *Users) getAllDatasbyRoomsByDate(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	day := r.URL.Query().Get("day")
+
+	start, err := helpers.ConvertStringToStartOfDay(day)
+	startString, _ := start.MarshalText()
+
+	end, err := helpers.ConvertStringToEndOfDay(day)
+	endString, _ := end.MarshalText()
+
+	roomInt, err := strconv.Atoi(id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	datas, err := u.us.GetAllDatasbyRoomBydate(roomInt, string(startString), string(endString))
+	w.Write(datas)
+}

@@ -116,8 +116,6 @@ func (ug *DbGorm) GetDataFromDate(start string, end string, sensorId int) ([]byt
 func (ug *DbGorm) GetRooms() ([]byte, error) {
 	var rooms []Rooms
 
-	fmt.Println("DANS LA FCTTTTTT DE MERRRRRDE")
-
 	db := ug.db.Table("rooms").Order("room_number").Find(&rooms)
 	if db.Error != nil {
 		fmt.Println(db.Error)
@@ -149,4 +147,25 @@ func (ug *DbGorm) GetAllDatasByRoom(room int) ([]byte, error) {
 	fmt.Println(sensorData)
 
 	return jsonData, nil
+}
+
+func (ug *DbGorm) GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error) {
+	var sensorData []SensorEvent
+
+	err := ug.db.Model(&SensorEvent{}).
+		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
+		Where("sensors.room_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, start, end).
+		Find(&sensorData).Error
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	jsonData, _ := json.Marshal(sensorData)
+	fmt.Printf("%+v\n", sensorData)
+
+	fmt.Println(sensorData)
+
+	return jsonData, nil
+
 }

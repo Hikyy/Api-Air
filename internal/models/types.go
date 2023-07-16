@@ -47,6 +47,7 @@ type EntityDB interface {
 	GetDataFromDate(start string, end string, id int) ([]byte, error)
 	GetRooms() ([]byte, error)
 	GetAllDatasByRoom(room int) ([]byte, error)
+	GetAllDatasbyRoomBydate(room int, end string, int string) ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model

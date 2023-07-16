@@ -24,6 +24,7 @@ func route(router *chi.Mux, userHandler *Users) {
 		r.Get("/getDatas", userHandler.GetDatasFromDates)
 		r.Get("/getRooms", userHandler.GetAllRooms)
 		r.Get("/GetAllDatasByRoom", userHandler.getAllDatasbyRooms)
+		r.Get("/getAllDatasByRoomByDates", userHandler.getAllDatasbyRoomsByDate)
 	})
 
 	router.NotFound(notfound)
