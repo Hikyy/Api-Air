@@ -8,7 +8,7 @@ type StoreUserRequest struct {
 			Firstname  string `json:"firstname" validate:"max=255|required"`
 			Lastname   string `json:"lastname" validate:"max=255|required"`
 			Password   string `json:"password" validate:"max=255|required"`
-			Group_name string `json:"default:'administrator'"`
+			Group_name string `json:"default:'user'"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
