@@ -124,6 +124,8 @@ func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
 
 func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	role := r.URL.Query().Get("role")
+
 	user := models.User{}
 	err := u.us.ByID(id, &user)
 	if err != nil {
@@ -133,7 +135,7 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	jsonUser, _ := json.Marshal(user)
 
 	fmt.Println(user)
-	sendToDb := u.us.Update(&user, "group_name", "admin")
+	sendToDb := u.us.Update(&user, "group_name", role)
 	sendToDbJson, _ := json.Marshal(sendToDb)
 	w.Write(sendToDbJson)
 	w.Write(jsonUser)
@@ -222,26 +224,31 @@ func (u *Users) IndexRoomSensorEventsByDate(w http.ResponseWriter, r *http.Reque
 	w.Write(datas)
 }
 
-//func (u *Users) GetAllDatasbyRoomBetweenTwoDays(w http.ResponseWriter, r *http.Request) {
-//	startDay := r.URL.Query().Get("start")
-//	endDay := r.URL.Query().Get("end")
-//	id := chi.URLParam(r, "id")
-//
-//	start, err := helpers.ConvertStringToStartOfDay(startDay)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//
-//	end, err := helpers.ConvertStringToEndOfDay(endDay)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//
-//	roomInt, err := helpers.TransformStringToInt(id)
-//	if err != nil {
-//		fmt.Println(err)
-//		return
-//	}
-//
-//	datas, err := u.us.GetAllDatasbyRoomBetweenTwoDays(roomInt, start, end)
-//}
+func (u *Users) IndexRoomSensorEventsBetweenTwoDates(w http.ResponseWriter, r *http.Request) {
+	startDay := chi.URLParam(r, "date-debut")
+	endDay := chi.URLParam(r, "date-fin")
+
+	id := chi.URLParam(r, "id")
+
+	start, err := helpers.ConvertStringToStartOfDay(startDay)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	end, err := helpers.ConvertStringToEndOfDay(endDay)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	roomInt, err := helpers.TransformStringToInt(id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	datas, err := u.us.GetAllDatasbyRoomBetweenTwoDays(roomInt, start, end)
+	if err != nil {
+		return
+	}
+	w.Write(datas)
+}

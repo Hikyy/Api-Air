@@ -48,7 +48,7 @@ type EntityDB interface {
 	GetRooms() ([]byte, error)
 	GetAllDatasByRoom(room int) ([]byte, error)
 	GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error)
-	//GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
+	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -88,7 +88,7 @@ type User struct {
 	Lastname   string
 	Email      string    `gorm:"not null;unique_index"`
 	Password   string    `gorm:"no null"` // Ne pas store dans la database
-	Group_name string    `gorm:"default:'administrator'"`
+	Group_name string    `gorm:"default:'user'"`
 	CreatedAt  time.Time `gorm:"type:timestamp"`
 	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
