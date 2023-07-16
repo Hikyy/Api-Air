@@ -303,10 +303,6 @@ CREATE TRIGGER products_notify_event
 INSERT INTO "buildings" (building_id)
 VALUES ('A');
 
-INSERT INTO users (firstname, lastname, email, password)
-VALUES ('admin', 'istrator', 'admin@hotmail.com', 'admin');
-
-
 INSERT INTO "floors" (floor_number, building_id)
 VALUES (1, 'A');
 
