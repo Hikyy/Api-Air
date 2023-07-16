@@ -3,6 +3,7 @@ package main
 import (
 	"App/internal/handlers"
 	"App/internal/models"
+	"App/internal/route"
 	"fmt"
 	"net/http"
 	"os"
@@ -36,7 +37,7 @@ func main() {
 		return
 	}
 
-	router := handlers.SetupRouter()
+	router := route.SetupRouter()
 
 	customRouter := &handlers.CustomRouter{
 		Router: router,
