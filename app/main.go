@@ -9,13 +9,6 @@ import (
 	"os/signal"
 )
 
-//
-//var (
-//	broker   = "mqtt://mqtt.arcplex.fr:2295"
-//	username = "groupe9"
-//	password = "Pu3a76ZS0pgT"
-//)
-
 func main() {
 
 	err := models.DatabaseServiceProvider()
@@ -24,12 +17,11 @@ func main() {
 		return
 	}
 	defer models.InitGorm.Close()
-
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
-	//go handlers.StartSQL(c)
-	//go handlers.SetMQTT(broker, username, password, c)
+	go handlers.SubscribeTopic(c)
+	go handlers.SendRequest(c)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
@@ -45,11 +37,8 @@ func main() {
 
 	fmt.Println("Server listening on port 8097")
 
-	//err = godotenv.Load()
-
-	//godot.Load()
-	//optimusPrime, _ := strconv.Atoi(os.Getenv("OPTIMUS_PRIME"))
-	//fmt.Println(optimusPrime)
+	// err = godotenv.Load()
 
 	http.ListenAndServe(":8097", customRouter)
+
 }
