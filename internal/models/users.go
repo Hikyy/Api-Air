@@ -169,3 +169,7 @@ func (ug *DbGorm) GetAllDatasbyRoomBydate(room int, start string, end string) ([
 	return jsonData, nil
 
 }
+
+//func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error) {
+//
+//}

@@ -21,10 +21,10 @@ func route(router *chi.Mux, userHandler *Users) {
 		// Routes protégées
 		r.Get("/profil", userHandler.GetAll)
 		r.Patch("/profil/user/{id}", userHandler.Update)
-		r.Get("/getDatas", userHandler.GetDatasFromDates)
-		r.Get("/getRooms", userHandler.GetAllRooms)
-		r.Get("/GetAllDatasByRoom", userHandler.getAllDatasbyRooms)
-		r.Get("/getAllDatasByRoomByDates", userHandler.getAllDatasbyRoomsByDate)
+		r.Get("/sensor-events", userHandler.IndexSensorEvents)
+		r.Get("/rooms", userHandler.IndexRooms)
+		r.Get("/room/{id}/sensor-events", userHandler.IndexRoomSensorEvents)
+		r.Get("/room/{id}/sensor-events/{date}", userHandler.IndexRoomSensorEventsByDate)
 	})
 
 	router.NotFound(notfound)

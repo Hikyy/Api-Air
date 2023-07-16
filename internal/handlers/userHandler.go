@@ -139,7 +139,7 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonUser)
 }
 
-func (u *Users) GetDatasFromDates(w http.ResponseWriter, r *http.Request) {
+func (u *Users) IndexSensorEvents(w http.ResponseWriter, r *http.Request) {
 	day := r.URL.Query().Get("day")
 	id := r.URL.Query().Get("id")
 
@@ -148,67 +148,100 @@ func (u *Users) GetDatasFromDates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// FAIRE UNE REGLE QUAND ON AURA LES DATAS FINALES
-	// POUR QUE L'ON NE PUISSE PAS ENTRER UNE VALEUR QUI N'EXISTE PAS
-	// EN GROS SI < DATE MIN START = DATE MIN
-	// SI > DATE MAX END = DATE MAX
-
 	start, err := helpers.ConvertStringToStartOfDay(day)
-	startString, _ := start.MarshalText()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	end, err := helpers.ConvertStringToEndOfDay(day)
-	endString, _ := end.MarshalText()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	fmt.Printf("%s     %s", startString, endString)
-
-	datas, err := u.us.GetDataFromDate(string(startString), string(endString), idToInt)
+	datas, err := u.us.GetDataFromDate(start, end, idToInt)
 	if err != nil {
 		fmt.Println("problèmeeeeeee => ", err)
+		return
 	}
 	w.Write(datas)
 }
 
-func (u *Users) GetAllRooms(w http.ResponseWriter, r *http.Request) {
+func (u *Users) IndexRooms(w http.ResponseWriter, r *http.Request) {
 	rooms, err := u.us.GetRooms()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	w.Write(rooms)
 }
 
-func (u *Users) getAllDatasbyRooms(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	roomInt, err := strconv.Atoi(id)
+func (u *Users) IndexRoomSensorEvents(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	roomInt, err := helpers.TransformStringToInt(id)
 
 	if err != nil {
 		return
 	}
-
 	datas, err := u.us.GetAllDatasByRoom(roomInt)
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	w.Write(datas)
 }
 
-func (u *Users) getAllDatasbyRoomsByDate(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	day := r.URL.Query().Get("day")
+func (u *Users) IndexRoomSensorEventsByDate(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	date := chi.URLParam(r, "date")
 
-	start, err := helpers.ConvertStringToStartOfDay(day)
-	startString, _ := start.MarshalText()
-
-	end, err := helpers.ConvertStringToEndOfDay(day)
-	endString, _ := end.MarshalText()
-
-	roomInt, err := strconv.Atoi(id)
+	start, err := helpers.ConvertStringToStartOfDay(date)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	datas, err := u.us.GetAllDatasbyRoomBydate(roomInt, string(startString), string(endString))
+	end, err := helpers.ConvertStringToEndOfDay(date)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	//roomInt, err := strconv.Atoi(id)
+	roomInt, err := helpers.TransformStringToInt(id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	datas, err := u.us.GetAllDatasbyRoomBydate(roomInt, start, end)
 	w.Write(datas)
 }
+
+//func (u *Users) GetAllDatasbyRoomBetweenTwoDays(w http.ResponseWriter, r *http.Request) {
+//	startDay := r.URL.Query().Get("start")
+//	endDay := r.URL.Query().Get("end")
+//	id := chi.URLParam(r, "id")
+//
+//	start, err := helpers.ConvertStringToStartOfDay(startDay)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//
+//	end, err := helpers.ConvertStringToEndOfDay(endDay)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//
+//	roomInt, err := helpers.TransformStringToInt(id)
+//	if err != nil {
+//		fmt.Println(err)
+//		return
+//	}
+//
+//	datas, err := u.us.GetAllDatasbyRoomBetweenTwoDays(roomInt, start, end)
+//}
