@@ -252,3 +252,7 @@ func (u *Users) IndexRoomSensorEventsBetweenTwoDates(w http.ResponseWriter, r *h
 	}
 	w.Write(datas)
 }
+
+func (u *Users) StoreActuators(w http.ResponseWriter, r *http.Request) {
+
+}

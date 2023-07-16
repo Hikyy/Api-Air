@@ -309,6 +309,8 @@ VALUES (1, 'A');
 INSERT INTO "rooms" (room_number, floor_id)
 VALUES ('105', 1),('106', 1),('107',1);
 
+
+
     INSERT INTO sensors(sensor_id, sensor_name,sensor_type,room_id)
 VALUES
     (102, 'ac', 'climatiseur',1),
@@ -354,3 +356,5 @@ VALUES
     (115, 'motion', 'mouvement',3),
     (104, 'light', 'lumiere',3);
 
+INSERT INTO users (firstname, lastname, email, password, group_name)
+VALUES('Admin', 'Admin', 'admin@admin.fr', '$2a$10$hFZcsuSzOOgXNlPLVhY4WOnigHa0FQwVqUl9VG4UyHcYY9sg/faxO', 'administrator');

@@ -189,3 +189,7 @@ func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end st
 
 	return jsonData, nil
 }
+
+func (ug *DbGorm) AddActuators(entity interface{}) error {
+	return ug.db.Table("actuators").Create(entity).Error
+}

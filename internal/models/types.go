@@ -49,6 +49,7 @@ type EntityDB interface {
 	GetAllDatasByRoom(room int) ([]byte, error)
 	GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error)
 	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
+	AddActuators(entity interface{}) error
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -181,6 +182,12 @@ func (s *Sensors) AfterFind(tx *gorm.DB) error {
 	s.SensorEvents = append(s.SensorEvents, sensorEvent)
 
 	return nil
+}
+
+type Actuators struct {
+	ActuatorName string `gorm:"actuator_name"`
+	ActuatorType string `gorm:"actuator_type"`
+	RoomId       int    `gorm:"room_id"`
 }
 
 type userValFunc func(*User) error
