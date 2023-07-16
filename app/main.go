@@ -45,7 +45,11 @@ func main() {
 
 	fmt.Println("Server listening on port 8097")
 
-	// err = godotenv.Load()
+	//err = godotenv.Load()
+
+	//godot.Load()
+	//optimusPrime, _ := strconv.Atoi(os.Getenv("OPTIMUS_PRIME"))
+	//fmt.Println(optimusPrime)
 
 	http.ListenAndServe(":8097", customRouter)
 }

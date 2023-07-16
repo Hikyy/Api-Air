@@ -47,7 +47,9 @@ type EntityDB interface {
 	GetDataFromDate(start string, end string, id int) ([]byte, error)
 	GetRooms() ([]byte, error)
 	GetAllDatasByRoom(room int) ([]byte, error)
-	GetAllDatasbyRoomBydate(room int, end string, int string) ([]byte, error)
+	GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error)
+	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
+	AddActuators(entity interface{}) error
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -87,7 +89,7 @@ type User struct {
 	Lastname   string
 	Email      string    `gorm:"not null;unique_index"`
 	Password   string    `gorm:"no null"` // Ne pas store dans la database
-	Group_name string    `gorm:"default:'administrator'"`
+	Group_name string    `gorm:"default:'user'"`
 	CreatedAt  time.Time `gorm:"type:timestamp"`
 	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
@@ -180,6 +182,12 @@ func (s *Sensors) AfterFind(tx *gorm.DB) error {
 	s.SensorEvents = append(s.SensorEvents, sensorEvent)
 
 	return nil
+}
+
+type Actuators struct {
+	ActuatorName string `gorm:"actuator_name"`
+	ActuatorType string `gorm:"actuator_type"`
+	RoomId       int    `gorm:"room_id"`
 }
 
 type userValFunc func(*User) error

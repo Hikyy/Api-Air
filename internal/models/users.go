@@ -169,3 +169,27 @@ func (ug *DbGorm) GetAllDatasbyRoomBydate(room int, start string, end string) ([
 	return jsonData, nil
 
 }
+
+func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error) {
+	var sensorData []SensorEvent
+
+	err := ug.db.Model(&SensorEvent{}).
+		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
+		Where("sensors.room_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, start, end).
+		Find(&sensorData).Error
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	jsonData, _ := json.Marshal(sensorData)
+	fmt.Printf("%+v\n", sensorData)
+
+	fmt.Println(sensorData)
+
+	return jsonData, nil
+}
+
+func (ug *DbGorm) AddActuators(entity interface{}) error {
+	return ug.db.Table("actuators").Create(entity).Error
+}
