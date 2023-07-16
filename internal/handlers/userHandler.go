@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"strconv"
 )
 
 // NewUsers for Parsing new user view/template in signup page
@@ -140,6 +141,12 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 
 func (u *Users) GetDatasFromDates(w http.ResponseWriter, r *http.Request) {
 	day := r.URL.Query().Get("day")
+	id := r.URL.Query().Get("id")
+
+	idToInt, err := strconv.Atoi(id)
+	if err != nil {
+		return
+	}
 
 	// FAIRE UNE REGLE QUAND ON AURA LES DATAS FINALES
 	// POUR QUE L'ON NE PUISSE PAS ENTRER UNE VALEUR QUI N'EXISTE PAS
@@ -154,9 +161,34 @@ func (u *Users) GetDatasFromDates(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("%s     %s", startString, endString)
 
-	datas, err := u.us.GetDataFromDate(string(startString), string(endString))
+	datas, err := u.us.GetDataFromDate(string(startString), string(endString), idToInt)
 	if err != nil {
 		fmt.Println("problèmeeeeeee => ", err)
 	}
+	w.Write(datas)
+}
+
+func (u *Users) GetAllRooms(w http.ResponseWriter, r *http.Request) {
+	rooms, err := u.us.GetRooms()
+	if err != nil {
+		fmt.Println(err)
+	}
+	w.Write(rooms)
+}
+
+func (u *Users) getAllDatasbyRooms(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	roomInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		return
+	}
+
+	datas, err := u.us.GetAllDatasByRoom(roomInt)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	w.Write(datas)
 }

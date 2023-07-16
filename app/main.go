@@ -9,6 +9,7 @@ import (
 	"os/signal"
 )
 
+//
 //var (
 //	broker   = "mqtt://mqtt.arcplex.fr:2295"
 //	username = "groupe9"
@@ -29,10 +30,6 @@ func main() {
 
 	//go handlers.StartSQL(c)
 	//go handlers.SetMQTT(broker, username, password, c)
-
-	//
-	//handlers.StartSQL()
-	//handlers.SetMQTT(broker, username, password)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)

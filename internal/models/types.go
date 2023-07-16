@@ -44,7 +44,9 @@ type EntityDB interface {
 
 	GetAllUsers() ([]byte, error)
 	AddDataToDb(entity interface{}) error
-	GetDataFromDate(start string, end string) ([]byte, error)
+	GetDataFromDate(start string, end string, id int) ([]byte, error)
+	GetRooms() ([]byte, error)
+	GetAllDatasByRoom(room int) ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -132,6 +134,51 @@ type SensorDatas struct {
 	EventTimestamp time.Time              `json:"tx_time_ms_epoch"`
 	EventData      map[string]interface{} `json:"data" gorm:"json"`
 	SensorID       int                    `json:"sensor_id"`
+}
+
+type Rooms struct {
+	RoomId     int `json:"room_id" gorm:"room_id"`
+	RoomNumber int `json:"room_number" gorm:"room_number"`
+	FloorId    int `json:"floor_id" gorm:"floor_id"`
+}
+
+type Datas struct {
+	EventTimestamp time.Time              `json:"tx_time_ms_epoch"`
+	EventData      map[string]interface{} `json:"data" gorm:"json"`
+	SensorID       int                    `json:"sensor_id"`
+	RoomId         int                    `json:"room_id"`
+}
+
+type SensorEvent struct {
+	EventTimestamp time.Time
+	SensorID       uint
+	EventData      map[string]interface{} `json:"event_data" gorm:"json"`
+
+	SensorName string `json:"sensor_name"`
+	SensorType string `json:"sensor_type"`
+	RoomID     int    `json:"room_id"`
+}
+
+type Sensors struct {
+	ID           int           `gorm:"id"`
+	SensorID     int           `gorm:"column:sensor_id"`
+	SensorName   string        `json:"sensor_name" gorm:"column:sensor_name"`
+	SensorType   string        `gorm:"column:sensor_type"`
+	RoomID       int           `json:"room_id" gorm:"column:room_id"`
+	SensorEvents []SensorEvent `json:"event_data" gorm:"foreignKey:SensorID" gorm:"column:sensor_event"`
+}
+
+func (s *Sensors) AfterFind(tx *gorm.DB) error {
+	sensorEvent := SensorEvent{
+		SensorID:   uint(s.SensorID),
+		SensorName: s.SensorName,
+		SensorType: s.SensorType,
+		RoomID:     s.RoomID,
+	}
+
+	s.SensorEvents = append(s.SensorEvents, sensorEvent)
+
+	return nil
 }
 
 type userValFunc func(*User) error
