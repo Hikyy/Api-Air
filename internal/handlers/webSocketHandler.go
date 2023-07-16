@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/lib/pq"
 	"os"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 var (

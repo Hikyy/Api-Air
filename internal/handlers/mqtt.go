@@ -6,14 +6,17 @@ import (
 	"App/internal/models"
 	"encoding/json"
 	"fmt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"time"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+var (
+	connSuccess = make(chan struct{})
+)
 var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 	//fmt.Printf("Messageeeeeeee %s received on topic %s\n", msg.Payload(), msg.Topic())
 	//Test()
@@ -21,7 +24,7 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	var jsonString = msg.Payload()
 	var sensorData models.SensorData
 	var sensorDatatoDb models.SensorDataToDb
-	fmt.Println("cc")
+
 	err := json.Unmarshal([]byte(jsonString), &sensorData)
 	if err != nil {
 		fmt.Println("Erreur lors de la désérialisation JSON:", err)
@@ -30,7 +33,6 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	datas := &Datas{
 		dts: models.Db, // Initialisez le champ dts avec l'objet approprié
 	}
-	fmt.Println("caca")
 	var sendDataToDB = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
 		return dt.dts.AddDataToDb(data), nil
 	}
@@ -51,8 +53,6 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 }
 
 func SetMQTT(broker string, username string, password string, c chan os.Signal) {
-	c = make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
 
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker(broker)
@@ -78,6 +78,38 @@ func SetMQTT(broker string, username string, password string, c chan os.Signal) 
 			}
 		}
 	}
-
+	close(connSuccess)
 	<-c // Attente de l'interruption du signal (CTRL+C)
+}
+func SendRequest(client MQTT.Client, c chan os.Signal) {
+	// set le type Message
+	// groupe := "groupe9"
+	// geteway_id := "a95cec4a-8aaf-4204-9fa2-b6c4aa8779e7"
+
+	// nodeRoute := fmt.Sprintf("%s/%s/%s", groupe, message, geteway_id)
+
+	// boucler sur les topics et envoyer le message
+	message := "message"
+	fmt.Println("hassan")
+	topics := config.Salles
+	select {
+	case <-connSuccess:
+		fmt.Println("Erreur de connexion MQTT")
+		return
+	case <-c:
+		for key, value := range topics {
+			for keySensor, valueSensor := range value {
+				topic := key + keySensor + valueSensor
+				token := client.Publish(topic, 0, false, message)
+				token.Wait()
+				if token.Error() != nil {
+					fmt.Printf("Error sending request to topic %s: %v\n", topic, token.Error())
+				} else {
+					fmt.Printf("Requete envoyée au topic: %s\n", topic)
+				}
+			}
+		}
+	}
+
+	<-c
 }

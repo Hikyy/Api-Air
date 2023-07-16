@@ -7,13 +7,16 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-//var (
-//	broker   = "mqtt://mqtt.arcplex.fr:2295"
-//	username = "groupe9"
-//	password = "Pu3a76ZS0pgT"
-//)
+var (
+	broker   = "mqtt://mqtt.arcplex.fr:2295"
+	username = "groupe9"
+	password = "Pu3a76ZS0pgT"
+	client   MQTT.Client
+)
 
 func main() {
 
@@ -23,15 +26,11 @@ func main() {
 		return
 	}
 	defer models.InitGorm.Close()
-
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-	//
-	//go handlers.StartSQL(c)
-	//go handlers.SetMQTT(broker, username, password, c)
 
-	//handlers.StartSQL()
-	//handlers.SetMQTT(broker, username, password)
+	go handlers.SetMQTT(broker, username, password, c)
+	go handlers.SendRequest(client, c)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
