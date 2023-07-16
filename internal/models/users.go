@@ -191,5 +191,5 @@ func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end st
 }
 
 func (ug *DbGorm) AddActuators(entity interface{}) error {
-	return ug.db.Table("actuators").Create(entity).Error
+	return ug.db.Table("automations").Create(entity).Error
 }

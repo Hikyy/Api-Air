@@ -184,10 +184,8 @@ func (s *Sensors) AfterFind(tx *gorm.DB) error {
 	return nil
 }
 
-type Actuators struct {
-	ActuatorName string `gorm:"actuator_name"`
-	ActuatorType string `gorm:"actuator_type"`
-	RoomId       int    `gorm:"room_id"`
+type Automations struct {
+	AutomationName string `json:"automation_name" gorm:"automation_name"`
 }
 
 type userValFunc func(*User) error

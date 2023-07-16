@@ -103,14 +103,15 @@ alter table "sensors"
 
 create table "actuators"
 (
-    actuator_id   serial
+    id   serial
         primary key,
-    actuator_name varchar(50) not null,
-    actuator_type varchar(50) not null,
+    actuator_name varchar(255) not null,
+    actuator_command varchar(255) not null,
     room_id       integer
         constraint "actuators_rooms_room_id_fk"
             references "rooms"
 );
+
 
 alter table "actuators"
     owner to postgres;
@@ -358,3 +359,29 @@ VALUES
 
 INSERT INTO users (firstname, lastname, email, password, group_name)
 VALUES('Admin', 'Admin', 'admin@admin.fr', '$2a$10$hFZcsuSzOOgXNlPLVhY4WOnigHa0FQwVqUl9VG4UyHcYY9sg/faxO', 'administrator');
+
+INSERT INTO actuators(actuator_name, actuator_command, room_id)
+VALUES ('HEATER_UP', '201', 1),
+       ('HEATER_DOWN', '202', 1),
+       ('AC_UP', '203', 1),
+       ('AC_DOWN', '204', 1),
+       ('VENT_UP', '205', 1),
+       ('VENT_DOWN', '206', 1),
+       ('LIGHT_ON', '207', 1),
+       ('LIGHT_OFF', '208', 1),
+       ('HEATER_UP', '201', 2),
+       ('HEATER_DOWN', '202', 2),
+       ('AC_UP', '203', 2),
+       ('AC_DOWN', '204', 2),
+       ('VENT_UP', '205', 2),
+       ('VENT_DOWN', '206', 2),
+       ('LIGHT_ON', '207', 2),
+       ('LIGHT_OFF', '208', 2),
+       ('HEATER_UP', '201', 3),
+       ('HEATER_DOWN', '202', 3),
+       ('AC_UP', '203', 3),
+       ('AC_DOWN', '204', 3),
+       ('VENT_UP', '205', 3),
+       ('VENT_DOWN', '206', 3),
+       ('LIGHT_ON', '207', 3),
+       ('LIGHT_OFF', '208', 3);

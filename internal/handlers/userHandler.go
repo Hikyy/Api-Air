@@ -253,6 +253,26 @@ func (u *Users) IndexRoomSensorEventsBetweenTwoDates(w http.ResponseWriter, r *h
 	w.Write(datas)
 }
 
-func (u *Users) StoreActuators(w http.ResponseWriter, r *http.Request) {
+func (u *Users) StoreAutoMations(w http.ResponseWriter, r *http.Request) {
+	var form requests.Automations
 
+	success := models.Success{Success: true}
+	successStatus, _ := json.Marshal(success)
+
+	errPayload := ProcessRequest(&form, r, w)
+	if errPayload != nil {
+		return
+	}
+
+	actuators := models.Automations{
+		AutomationName: form.Data.Attributes.AutomationName,
+	}
+	if err := u.us.AddActuators(&actuators); err != nil {
+		fmt.Println(err)
+		success := models.Success{Success: false}
+		successStatus, _ := json.Marshal(success)
+		w.Write(successStatus)
+		return
+	}
+	w.Write(successStatus)
 }
