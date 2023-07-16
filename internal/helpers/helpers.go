@@ -8,9 +8,13 @@ import (
 	"strconv"
 
 	"github.com/gorilla/schema"
+	"github.com/joho/godotenv"
 	"github.com/pjebs/optimus-go"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var destinationPkg string
+var Type string
 
 // ParseForm pour décoder l'http request de Gorillan schema
 func ParseForm(r *http.Request, dst interface{}) error {
@@ -35,6 +39,11 @@ func HashPassword(password string) string {
 }
 
 func InitOptimus() optimus.Optimus {
+	err := godotenv.Load()
+
+	if err != nil {
+		fmt.Println("Failed to load .env file:", err)
+	}
 	optimusPrime, _ := strconv.Atoi(os.Getenv("OPTIMUS_PRIME"))
 	optimusInverse, _ := strconv.Atoi(os.Getenv("OPTIMUS_INVERSE"))
 	optimusRandom, _ := strconv.Atoi(os.Getenv("OPTIMUS_RANDOM"))
@@ -59,31 +68,107 @@ func CheckPassword(hashedPassword string, password string) bool {
 	return false
 }
 
+func EncodeId(id int) string {
+	o := InitOptimus()
+	newId := o.Encode(uint64(id))
+
+	return strconv.FormatUint(newId, 10)
+}
+
+//Refacto this method @Hikyy
 func FillStruct(destination interface{}, source interface{}) {
-	destinationValue := reflect.ValueOf(destination).Elem()
-	sourceValue := reflect.ValueOf(source).Elem()
-	sourceType := sourceValue.Type()
+	destinationValue := reflect.ValueOf(destination)
 
-	for i := 0; i < destinationValue.NumField(); i++ {
-		destinationField := destinationValue.Field(i)
-		destinationFieldType := destinationField.Type()
-		destinationFieldName := destinationValue.Type().Field(i).Name
+	if reflect.TypeOf(destination).Elem().PkgPath() == "App/internal/resources" {
+		// Type = reflect.TypeOf(source).Elem().Name()
+		t := reflect.TypeOf(source)
+		Type = ""
+		if t.Kind() == reflect.Ptr {
+			Type = t.Elem().Name()
+		} else {
+			Type = t.Name()
+		}
+		destinationPkg = reflect.TypeOf(destination).Elem().PkgPath()
+	}
 
-		for j := 0; j < sourceValue.NumField(); j++ {
-			sourceField := sourceValue.Field(j)
-			sourceFieldType := sourceField.Type()
-			sourceFieldName := sourceType.Field(j).Name
+	if destinationValue.Kind() != reflect.Ptr || destinationValue.IsNil() {
+		panic("destination must be a non-nil pointer")
+	}
 
-			if destinationFieldName == sourceFieldName && destinationFieldType == sourceFieldType {
-				if destinationField.CanSet() && sourceField.IsValid() {
-					if destinationField.Kind() == reflect.Struct && sourceField.Kind() == reflect.Struct {
-						FillStruct(destinationField.Addr().Interface(), sourceField.Interface())
+	destinationValue = destinationValue.Elem()
+	sourceValue := reflect.ValueOf(source)
+
+	if sourceValue.Kind() == reflect.Ptr {
+		sourceValue = sourceValue.Elem()
+	}
+
+	if destinationValue.Kind() == reflect.Slice {
+		for z := 0; z < destinationValue.Len(); z++ {
+			FillStruct(destinationValue.Field(z).Addr(), sourceValue.Field(z).Addr())
+		}
+		// processSliceField(destinationValue.Addr(), source)
+	}
+
+	if sourceValue.Kind() == reflect.Slice {
+		for i := 0; i < sourceValue.Len(); i++ {
+			singleSource := sourceValue.Index(i).Interface()
+			singleDestination := reflect.New(destinationValue.Type().Elem())
+			FillStruct(singleDestination.Interface(), singleSource)
+			destinationValue.Set(reflect.Append(destinationValue, singleDestination.Elem()))
+		}
+	} else {
+		// fmt.Printf("Test : %#v\n", destinationValue)
+		// if destinationValue.Kind() == reflect.Struct {
+		for i := 0; i < destinationValue.NumField(); i++ {
+			destinationField := destinationValue.Field(i)
+			for j := 0; j < sourceValue.NumField(); j++ {
+				sourceField := sourceValue.Type().Field(j)
+				if destinationValue.Type().Field(i).Name == sourceField.Name {
+
+					if destinationPkg == "App/internal/resources" {
+						id := ""
+						if sourceField.Name == "Id" && destinationValue.Type().Field(i).Name == "Id" {
+							id = EncodeId(int(sourceValue.Field(j).Int()))
+						}
+						if destinationField.CanSet() {
+							if id == "" && destinationValue.Type().Field(i).Name != "Id" && sourceField.Name != "Id" {
+								// fmt.Println(" 1 : sourceValue.Field(j) : ", sourceValue.Field(j))
+								// fmt.Println(" 1 : destinationField.Type() : ", destinationField.Type().Kind())
+								// fmt.Println("destinationValue.Type().Field(i).Name", destinationValue.Type().Field(i).Name)
+								// fmt.Println("sourceField.Name", sourceField.Name)
+								destinationField.Set(sourceValue.Field(j))
+							} else {
+								// fmt.Println(" 2 : sourceValue.Field(j) : ", sourceValue.Field(j))
+								// fmt.Println(" 2 : destinationField.Type() : ", destinationField.Type().Kind())
+								// fmt.Println("id : ", destinationField)
+								destinationField.SetString(id)
+							}
+						}
 					} else {
-						destinationField.Set(sourceField)
+						if destinationField.CanSet() {
+							destinationField.Set(sourceValue.Field(j))
+						}
 					}
-					break
+				}
+				if destinationPkg == "App/internal/resources" && destinationValue.Type().Field(i).Name == "Type" && Type != "" {
+					destinationField.SetString(Type)
 				}
 			}
+
+			if destinationField.Kind() == reflect.Struct {
+				FillStruct(destinationField.Addr().Interface(), source)
+			} else if destinationField.Kind() == reflect.Slice {
+				processSliceField(destinationField, source)
+			} else {
+				// fmt.Printf("Unhandled field type: %s\n", destinationField.Kind())
+			}
 		}
+		// }
+	}
+}
+
+func processSliceField(field reflect.Value, source interface{}) {
+	for i := 0; i < field.Len(); i++ {
+		FillStruct(field.Index(i).Addr().Interface(), source)
 	}
 }
