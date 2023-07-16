@@ -38,12 +38,8 @@ create table "user_groups"
         constraint "user_group_pk"
             primary key
 );
-
 INSERT INTO "user_groups" (group_name)
-VALUES
-    ('user'),
-    ('admin'),
-    ('owner');
+VALUES ('user'), ('administrator');
 
 alter table "user_groups"
     owner to postgres;
@@ -92,8 +88,9 @@ alter sequence rooms_room_id_seq owned by "rooms".room_id;
 
 create table "sensors"
 (
-    sensor_id   serial
+    id   serial
         primary key,
+    sensor_id   INT         not null,
     sensor_name varchar(50) not null,
     sensor_type varchar(50) not null,
     room_id     integer
@@ -118,30 +115,17 @@ create table "actuators"
 alter table "actuators"
     owner to postgres;
 
-create table "sensor_events"
-(
-    event_id        serial
-        primary key,
-    event_timestamp timestamp with time zone not null,
-    event_data      jsonb,
-    sensor_id       integer                  not null
-        references "sensors"
-);
-CREATE OR REPLACE FUNCTION notify_sensor_event()
-  RETURNS TRIGGER AS $$
-BEGIN
-  PERFORM pg_notify('sensor_event_inserted', 'New Entry');
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+CREATE SEQUENCE sensor_events_event_id_seq;
 
-CREATE TRIGGER sensor_event_trigger
-    AFTER INSERT ON sensor_events
-    FOR EACH ROW
-    EXECUTE FUNCTION notify_sensor_event();
+CREATE TABLE "public"."sensor_events" (
+  "id" integer DEFAULT nextval('sensor_events_event_id_seq') NOT NULL,
+  "event_timestamp" timestamp(0),
+  "event_data" jsonb,
+  "sensor_id" integer NOT NULL,
+  CONSTRAINT "sensor_events_pkey" PRIMARY KEY ("id")
+) WITH (oids = false);
 
-alter table "sensor_events"
-    owner to postgres;
+ALTER TABLE "sensor_events" OWNER TO postgres;
 
 CREATE SEQUENCE IF NOT EXISTS users_id_seq;
 
@@ -170,7 +154,7 @@ create table "user_logs"
 (
     id        serial
         primary key,
-    log_timestamp timestamp with time zone default CURRENT_TIMESTAMP not null,
+    log_timestamp timestamp(0) with time zone default CURRENT_TIMESTAMP not null,
     log_data      jsonb,
     user_id       integer                                            not null
         references "users"("id")
@@ -185,7 +169,7 @@ create table "actuator_states"
         primary key
         references "actuators",
     state           jsonb,
-    last_updated_at timestamp with time zone default CURRENT_TIMESTAMP
+    last_updated_at timestamp(0) with time zone default CURRENT_TIMESTAMP
 );
 
 alter table "actuator_states"
@@ -278,3 +262,99 @@ create table "automation_conditions"
 
 alter table "automation_conditions"
     owner to postgres;
+
+CREATE OR REPLACE FUNCTION notify_event() RETURNS TRIGGER AS $$
+
+    DECLARE
+data json;
+        notification json;
+
+BEGIN
+
+        -- Convert the old or new row to JSON, based on the kind of action.
+        -- Action = DELETE?             -> OLD row
+        -- Action = INSERT or UPDATE?   -> NEW row
+        IF (TG_OP = 'CREATE') THEN
+            data = row_to_json(OLD);
+ELSE
+            data = row_to_json(NEW);
+END IF;
+
+        -- Contruct the notification as a JSON string.
+        notification = json_build_object(
+                          'table',TG_TABLE_NAME,
+                          'action', TG_OP,
+                          'data', data);
+
+
+        -- Execute pg_notify(channel, notification)
+        PERFORM pg_notify('events',notification::text);
+
+        -- Result is ignored since this is an AFTER trigger
+RETURN NULL;
+END;
+
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER products_notify_event
+    AFTER INSERT OR UPDATE OR DELETE ON sensor_events
+    FOR EACH ROW EXECUTE PROCEDURE notify_event();
+
+INSERT INTO "buildings" (building_id)
+VALUES ('A');
+
+INSERT INTO users (firstname, lastname, email, password)
+VALUES ('admin', 'istrator', 'admin@hotmail.com', 'admin');
+
+
+INSERT INTO "floors" (floor_number, building_id)
+VALUES (1, 'A');
+
+INSERT INTO "rooms" (room_number, floor_id)
+VALUES ('105', 1),('106', 1),('107',1);
+
+    INSERT INTO sensors(sensor_id, sensor_name,sensor_type,room_id)
+VALUES
+    (102, 'ac', 'climatiseur',1),
+    (116, 'atmospheric_pressure', 'pression_atmo',1),
+    (100, 'persons', 'capteur_presence', 1),
+    (119, 'level', 'niveau',1),
+    (118, 'lux', 'capteur_luminosite',1),
+    (128, 'kwh', 'consommation_elec',1),
+    (101, 'heat', 'chaleur',1),
+    (131, 'co2', 'capteur_co2',1),
+    (114, 'humidity', 'capteur_humidite',1),
+    (136, 'adc', 'analog_to_digital_converter',1),
+    (112, 'temperature', 'temperature',1),
+    (103, 'humidity', 'capteur_humidite',1),
+    (115, 'motion', 'mouvement',1),
+    (104, 'light', 'lumiere',1),
+    (102, 'ac', 'climatiseur',2),
+    (116, 'atmospheric_pressure', 'pression_atmo',2),
+    (100, 'persons', 'capteur_presence', 2),
+    (119, 'level', 'niveau',2),
+    (118, 'lux', 'capteur_luminosite',2),
+    (128, 'kwh', 'consommation_elec',2),
+    (101, 'heat', 'chaleur',2),
+    (131, 'co2', 'capteur_co2',2),
+    (114, 'humidity', 'capteur_humidite',2),
+    (136, 'adc', 'analog_to_digital_converter',2),
+    (112, 'temperature', 'temperature',2),
+    (103, 'humidity', 'capteur_humidite',2),
+    (115, 'motion', 'mouvement',2),
+    (104, 'light', 'lumiere',2),
+    (102, 'ac', 'climatiseur',3),
+    (116, 'atmospheric_pressure', 'pression_atmo',3),
+    (100, 'persons', 'capteur_presence', 3),
+    (119, 'level', 'niveau',3),
+    (118, 'lux', 'capteur_luminosite',3),
+    (128, 'kwh', 'consommation_elec',3),
+    (101, 'heat', 'chaleur',3),
+    (131, 'co2', 'capteur_co2',3),
+    (114, 'humidity', 'capteur_humidite',3),
+    (136, 'adc', 'analog_to_digital_converter',3),
+    (112, 'temperature', 'temperature',3),
+    (103, 'humidity', 'capteur_humidite',3),
+    (115, 'motion', 'mouvement',3),
+    (104, 'light', 'lumiere',3);
+

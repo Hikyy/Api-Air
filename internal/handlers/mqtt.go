@@ -31,7 +31,7 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 		dts: models.Db, // Initialisez le champ dts avec l'objet approprié
 	}
 	fmt.Println("caca")
-	var prout = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
+	var sendDataToDB = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
 		return dt.dts.AddDataToDb(data), nil
 	}
 
@@ -45,13 +45,13 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	sensorDatatoDb.EventData = sensorData.Data
 
 	for key, value := range sensorData.Data {
-		prout(datas, &sensorDatatoDb)
+		sendDataToDB(datas, &sensorDatatoDb)
 		fmt.Printf("%s: %v\n", key, value)
 	}
 }
 
-func SetMQTT(broker string, username string, password string) {
-	c := make(chan os.Signal, 1)
+func SetMQTT(broker string, username string, password string, c chan os.Signal) {
+	c = make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	opts := MQTT.NewClientOptions()

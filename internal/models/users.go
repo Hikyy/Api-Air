@@ -88,9 +88,7 @@ func (ug *DbGorm) GetAllUsers() ([]byte, error) {
 	if db.Error != nil {
 		return nil, db.Error
 	}
-	fmt.Println(users)
 	jsonData, err := json.Marshal(users)
-
 	if err != nil {
 		return nil, err
 	}
@@ -99,4 +97,75 @@ func (ug *DbGorm) GetAllUsers() ([]byte, error) {
 
 func (ug *DbGorm) AddDataToDb(entity interface{}) error {
 	return ug.db.Table("sensor_events").Create(entity).Error
+}
+
+func (ug *DbGorm) GetDataFromDate(start string, end string, sensorId int) ([]byte, error) {
+
+	var datas []SensorDatas
+
+	db := ug.db.Table("sensor_events").Where("event_timestamp >= ? AND event_timestamp <= ?", start, end).Where("sensor_id = ?", sensorId).Find(&datas)
+	if db.Error != nil {
+		fmt.Println(db.Error)
+		return nil, db.Error
+	}
+	fmt.Println(datas)
+	jsonData, _ := json.Marshal(datas)
+	return jsonData, nil
+}
+
+func (ug *DbGorm) GetRooms() ([]byte, error) {
+	var rooms []Rooms
+
+	db := ug.db.Table("rooms").Order("room_number").Find(&rooms)
+	if db.Error != nil {
+		fmt.Println(db.Error)
+		return nil, db.Error
+	}
+
+	jsonData, _ := json.Marshal(rooms)
+	fmt.Println(jsonData)
+	return jsonData, nil
+}
+
+func (ug *DbGorm) GetAllDatasByRoom(room int) ([]byte, error) {
+
+	var sensorData []SensorEvent
+
+	err := ug.db.Model(&SensorEvent{}).
+		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
+		Where("sensors.room_id = ?", room).
+		Find(&sensorData).Error
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	jsonData, _ := json.Marshal(sensorData)
+	fmt.Printf("%+v\n", sensorData)
+
+	fmt.Println(sensorData)
+
+	return jsonData, nil
+}
+
+func (ug *DbGorm) GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error) {
+	var sensorData []SensorEvent
+
+	err := ug.db.Model(&SensorEvent{}).
+		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
+		Where("sensors.room_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, start, end).
+		Find(&sensorData).Error
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	jsonData, _ := json.Marshal(sensorData)
+	fmt.Printf("%+v\n", sensorData)
+
+	fmt.Println(sensorData)
+
+	return jsonData, nil
+
 }
