@@ -5,10 +5,8 @@ import (
 )
 
 // Users Struct for holding Users variables
-type Users struct {
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
-	us       models.EntityImplementService
+type HandlerService struct {
+	use models.EntityImplementService
 }
 
 type Datas struct {
