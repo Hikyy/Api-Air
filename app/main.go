@@ -29,6 +29,7 @@ func main() {
 
 	//go handlers.SubscribeTopic(c)
 	//go handlers.SendRequest(c)
+	//go handlers.StartSQL(c)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
@@ -44,8 +45,5 @@ func main() {
 
 	fmt.Println("Server listening on port 8097")
 
-	// err = godotenv.Load()
-
 	http.ListenAndServe(":8097", customRouter)
-
 }

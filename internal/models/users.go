@@ -84,6 +84,7 @@ func (us *DatabaseProvider) Authenticate(email, password string) (*User, error) 
 
 func (ug *DbGorm) GetAllUsers() ([]byte, error) {
 	var users []UserToFront
+
 	db := ug.db.Table("users").Order("firstname").Find(&users)
 	if db.Error != nil {
 		return nil, db.Error

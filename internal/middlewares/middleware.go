@@ -1,8 +1,6 @@
 package middlewares
 
 import (
-	"App/internal/models"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -19,18 +17,12 @@ func CheckMJWTValidity(next http.Handler) http.Handler {
 		fmt.Println(r.Cookie("TokenBearer"))
 
 		cookie, err := r.Cookie("TokenBearer")
-
-		successAndCookie := models.TokenValidityToken{Jwt: true, Cookie: cookie}
-		successStatus, _ := json.Marshal(successAndCookie)
+		fmt.Println(cookie)
 
 		if err != nil {
-			success := models.TokenValidity{Jwt: false}
-			successStatus, _ = json.Marshal(success)
-			w.Write(successStatus)
 			return
 		}
 
-		w.Write(successStatus)
 		next.ServeHTTP(w, r)
 	})
 }

@@ -133,9 +133,13 @@ var Cookie = http.Cookie{
 }
 
 type UserReturn struct {
-	Firstname string
-	Lastname  string
-	Email     string
+	Data JsonUserReturn `json:"data"`
+}
+
+type JsonUserReturn struct {
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
 }
 
 type SensorDatas struct {

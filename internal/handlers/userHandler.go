@@ -79,16 +79,9 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnFront := models.UserReturn{
-		Firstname: user.Firstname,
-		Lastname:  user.Lastname,
-		Email:     user.Email,
-	}
-
 	// Create a new response object and fill it with data
 	resp := response{
 		Success: true,
-		Data:    returnFront,
 	}
 
 	// Marshal the response object into JSON
@@ -119,6 +112,7 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
 
 func (u *Users) IndexProfils(w http.ResponseWriter, r *http.Request) {
 	users, _ := u.us.GetAllUsers()
+
 	w.Write(users)
 }
 
@@ -132,6 +126,7 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 		// Gérer l'erreur
 		fmt.Println(err)
 	}
+
 	jsonUser, _ := json.Marshal(user)
 
 	fmt.Println(user)
