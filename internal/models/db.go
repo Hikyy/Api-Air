@@ -13,6 +13,7 @@ import (
 
 type DatabaseProvider struct {
 	EntityDB
+	db *gorm.DB
 }
 
 var Db *DatabaseProvider
@@ -37,17 +38,9 @@ func InitDB() (*DbGorm, error) {
 	// conn.LogMode(true)
 
 	return &DbGorm{
-		db:    conn,
-		dbase: dbase,
+		Db:    conn,
+		Dbase: dbase,
 	}, nil
-}
-
-func GetDB() *DatabaseProvider {
-	return Db
-}
-
-func (ug *DbGorm) Begin() *gorm.DB {
-	return ug.db.Begin()
 }
 
 func DatabaseServiceProvider() error {
@@ -64,7 +57,11 @@ func DatabaseServiceProvider() error {
 
 	// ug.db.AutoMigrate(&User{})
 
-	ug.Ping()
+	err = ug.Ping()
+
+	if err != nil {
+		return err
+	}
 
 	hmac := hash.NewHMAC(HmacSecret)
 
@@ -80,14 +77,18 @@ func DatabaseServiceProvider() error {
 	return nil
 }
 
+func (ug *DbGorm) Begin() *gorm.DB {
+	return ug.Db.Begin()
+}
+
 func (ug *DbGorm) Close() error {
-	return ug.dbase.Close()
+	return ug.Dbase.Close()
 }
 
 func (ug *DbGorm) Ping() error {
 
-	if err := ug.dbase.Ping(); err != nil {
-		ug.dbase.Close()
+	if err := ug.Dbase.Ping(); err != nil {
+		ug.Dbase.Close()
 		return errors.New("Connection to DB is not available")
 	}
 
