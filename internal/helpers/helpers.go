@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 
 	"github.com/gorilla/schema"
@@ -75,7 +76,7 @@ func EncodeId(id int) string {
 	return strconv.FormatUint(newId, 10)
 }
 
-//Refacto this method @Hikyy
+// Refacto this method @Hikyy
 func FillStruct(destination interface{}, source interface{}) {
 	destinationValue := reflect.ValueOf(destination)
 
@@ -106,7 +107,6 @@ func FillStruct(destination interface{}, source interface{}) {
 		for z := 0; z < destinationValue.Len(); z++ {
 			FillStruct(destinationValue.Field(z).Addr(), sourceValue.Field(z).Addr())
 		}
-		// processSliceField(destinationValue.Addr(), source)
 	}
 
 	if sourceValue.Kind() == reflect.Slice {
@@ -117,8 +117,6 @@ func FillStruct(destination interface{}, source interface{}) {
 			destinationValue.Set(reflect.Append(destinationValue, singleDestination.Elem()))
 		}
 	} else {
-		// fmt.Printf("Test : %#v\n", destinationValue)
-		// if destinationValue.Kind() == reflect.Struct {
 		for i := 0; i < destinationValue.NumField(); i++ {
 			destinationField := destinationValue.Field(i)
 			for j := 0; j < sourceValue.NumField(); j++ {
@@ -131,17 +129,21 @@ func FillStruct(destination interface{}, source interface{}) {
 							id = EncodeId(int(sourceValue.Field(j).Int()))
 						}
 						if destinationField.CanSet() {
-							if id == "" && destinationValue.Type().Field(i).Name != "Id" && sourceField.Name != "Id" {
-								// fmt.Println(" 1 : sourceValue.Field(j) : ", sourceValue.Field(j))
-								// fmt.Println(" 1 : destinationField.Type() : ", destinationField.Type().Kind())
-								// fmt.Println("destinationValue.Type().Field(i).Name", destinationValue.Type().Field(i).Name)
-								// fmt.Println("sourceField.Name", sourceField.Name)
+							if id == "" {
 								destinationField.Set(sourceValue.Field(j))
 							} else {
-								// fmt.Println(" 2 : sourceValue.Field(j) : ", sourceValue.Field(j))
-								// fmt.Println(" 2 : destinationField.Type() : ", destinationField.Type().Kind())
-								// fmt.Println("id : ", destinationField)
-								destinationField.SetString(id)
+								if sourceValue.Kind() == reflect.Int && destinationValue.Kind() == reflect.Int {
+									id, err := strconv.Atoi(id)
+
+									if err != nil {
+										fmt.Println("Error during conversion")
+										return
+									}
+
+									destinationField.SetInt(int64(id))
+								} else {
+									destinationField.SetString(id)
+								}
 							}
 						}
 					} else {
@@ -160,10 +162,9 @@ func FillStruct(destination interface{}, source interface{}) {
 			} else if destinationField.Kind() == reflect.Slice {
 				processSliceField(destinationField, source)
 			} else {
-				// fmt.Printf("Unhandled field type: %s\n", destinationField.Kind())
+				fmt.Printf("Unhandled field type: %s\n", destinationField.Kind())
 			}
 		}
-		// }
 	}
 }
 
