@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"regexp"
 	"strconv"
 
 	"github.com/gorilla/schema"
