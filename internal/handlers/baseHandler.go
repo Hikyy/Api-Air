@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 // NewUsers for Parsing new user view/template in signup page
@@ -28,8 +29,15 @@ func (handler *HandlerService) setCookieFromJWT(w http.ResponseWriter, email str
 		fmt.Println(err)
 	}
 
-	cookie := models.Cookie
-	cookie.Value = token
+	cookie := http.Cookie{
+		Name:     "TokenBearer",
+		Value:    token,
+		Path:     "/",
+		Expires:  time.Now().Add(time.Minute * 2500),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
 
 	http.SetCookie(w, &cookie)
 }
