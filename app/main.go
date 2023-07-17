@@ -27,8 +27,8 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
-	go handlers.SubscribeTopic(c)
-	go handlers.SendRequest(c)
+	//go handlers.SubscribeTopic(c)
+	//go handlers.SendRequest(c)
 
 	if err != nil {
 		fmt.Println("Failed to connect to database:", err)
