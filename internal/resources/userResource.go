@@ -8,7 +8,7 @@ type UserResource struct {
 			Firstname  string `json:"firstname"`
 			Lastname   string `json:"lastname"`
 			Email      string `json:"email"`
-			Group_name string `json:"administrator"`
+			Group_name string `json:"group_name"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
