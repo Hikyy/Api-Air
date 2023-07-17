@@ -21,12 +21,26 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 		r.Use(middlewares.CheckMJWTValidity)
 
 		// Routes protégées
-		r.Get("/profil", handlerService.GetAll)
+
+		// Route Condition
+		r.Get("/conditions", handlerService.IndexCondition)
+		r.Post("/conditions", handlerService.StoreCondition)
+
+		// Route User
+		r.Get("/profils", handlerService.IndexProfils)
 		r.Patch("/profil/user/{id}", handlerService.Update)
-		r.Get("/getDatas", handlerService.GetDatasFromDates)
-		r.Get("/getRooms", handlerService.GetAllRooms)
-		r.Get("/GetAllDatasByRoom", handlerService.GetAllDatasbyRooms)
-		r.Get("/getAllDatasByRoomByDates", handlerService.GetAllDatasbyRoomsByDate)
+
+		// Route Actuator
+		r.Get("/actuators", handlerService.IndexActuators)
+
+		// Route Room
+		r.Get("/rooms", handlerService.IndexRooms)
+
+		// Route Sensor Event
+		r.Get("/sensor-events", handlerService.IndexSensorEvents)
+		r.Get("/room/{id}/sensor-events", handlerService.IndexRoomSensorEvents)
+		r.Get("/room/{id}/sensor-events/{date}", handlerService.IndexRoomSensorEventsByDate)
+		r.Get("/room/{id}/sensor-events/{date-debut}/{date-fin}", handlerService.IndexRoomSensorEventsBetweenTwoDates)
 	})
 
 	router.NotFound(notfound)
