@@ -32,8 +32,12 @@ func (handler *HandlerService) StoreUser(w http.ResponseWriter, r *http.Request)
 	fmt.Printf("user: %+v\n", user)
 
 	if err := handler.use.Create(&user, w); err != nil {
-		err, _ := json.Marshal(err)
-		w.Write(err)
+		success := models.Success{Success: false}
+
+		successStatus, _ := json.Marshal(success)
+
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(successStatus)
 	}
 	var userResource resources.UserResource
 
