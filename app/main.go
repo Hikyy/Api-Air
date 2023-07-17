@@ -3,16 +3,11 @@ package main
 import (
 	"App/internal/handlers"
 	"App/internal/models"
+	"App/internal/route"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
-)
-
-var (
-	broker   = "mqtt://mqtt.arcplex.fr:2295"
-	username = "groupe9"
-	password = "Pu3a76ZS0pgT"
 )
 
 func main() {
@@ -36,7 +31,7 @@ func main() {
 		return
 	}
 
-	router := handlers.SetupRouter()
+	router := route.SetupRouter()
 
 	customRouter := &handlers.CustomRouter{
 		Router: router,

@@ -1,37 +1,45 @@
 package handlers
 
 import (
+	"App/internal/auth"
 	"App/internal/models"
 	"App/internal/requests"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"reflect"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
+	"time"
 )
 
-func SetupRouter() http.Handler {
-	router := chi.NewRouter()
+// NewUsers for Parsing new user view/template in signup page
+func NewHandler(provider models.EntityImplementService) *HandlerService {
+	return &HandlerService{
+		use: provider,
+	}
+}
 
-	// router.Use(middlewares.TransactionMiddleware(models.InitGorm))
+func (handler *HandlerService) setCookieFromJWT(w http.ResponseWriter, email string) {
+	token, err := auth.GenerateJWT(email)
 
-	// router.Use(middlewares.TransactionMiddleware)
+	fmt.Println(email)
 
-	cors := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowCredentials: true,
-	})
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	router.Use(cors.Handler)
+	cookie := http.Cookie{
+		Name:     "TokenBearer",
+		Value:    token,
+		Path:     "/",
+		Expires:  time.Now().Add(time.Minute * 2500),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
 
-	userHandler := NewUsers(models.Db)
-
-	route(router, userHandler)
-
-	return router
+	http.SetCookie(w, &cookie)
 }
 
 func recursiveExploreStruct(formRequest interface{}, result *[][]string) {
@@ -82,7 +90,7 @@ func ProcessRequest(structRequest interface{}, request *http.Request, writer htt
 	if len(errFormRequest) != 0 {
 		jsonData, _ := json.Marshal(errFormRequest)
 
-		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusUnprocessableEntity)
 		writer.Write(jsonData)
 		return errFormRequest
 	}
