@@ -79,16 +79,9 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnFront := models.UserReturn{
-		Firstname: user.Firstname,
-		Lastname:  user.Lastname,
-		Email:     user.Email,
-	}
-
 	// Create a new response object and fill it with data
 	resp := response{
 		Success: true,
-		Data:    returnFront,
 	}
 
 	// Marshal the response object into JSON
@@ -117,8 +110,9 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
 	return cookie
 }
 
-func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
+func (u *Users) IndexProfils(w http.ResponseWriter, r *http.Request) {
 	users, _ := u.us.GetAllUsers()
+
 	w.Write(users)
 }
 
@@ -132,6 +126,7 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 		// Gérer l'erreur
 		fmt.Println(err)
 	}
+
 	jsonUser, _ := json.Marshal(user)
 
 	fmt.Println(user)
@@ -253,6 +248,41 @@ func (u *Users) IndexRoomSensorEventsBetweenTwoDates(w http.ResponseWriter, r *h
 	w.Write(datas)
 }
 
-func (u *Users) StoreActuators(w http.ResponseWriter, r *http.Request) {
+func (u *Users) StoreCondition(w http.ResponseWriter, r *http.Request) {
+	var form requests.Condition
 
+	success := models.Success{Success: true}
+	successStatus, _ := json.Marshal(success)
+
+	errPayload := ProcessRequest(&form, r, w)
+	if errPayload != nil {
+		return
+	}
+
+	actuators := models.Condition{
+		AutomationName: form.Data.Attributes.AutomationName,
+		SensorId:       form.Data.Attributes.SensorId,
+		DataKey:        form.Data.Attributes.DataKey,
+		Operator:       form.Data.Attributes.Operator,
+		Value:          form.Data.Attributes.Value,
+		ActuatorId:     form.Data.Attributes.ActuatorId,
+	}
+
+	if err := u.us.AddCondition(&actuators); err != nil {
+		fmt.Println(err)
+		success := models.Success{Success: false}
+		successStatus, _ := json.Marshal(success)
+		w.Write(successStatus)
+		return
+	}
+	w.Write(successStatus)
+}
+func (u *Users) IndexCondition(w http.ResponseWriter, r *http.Request) {
+	datas, _ := u.us.GetAllConditions()
+	w.Write(datas)
+}
+
+func (u *Users) IndexActuators(w http.ResponseWriter, r *http.Request) {
+	datas, _ := u.us.GetAllActuators()
+	w.Write(datas)
 }

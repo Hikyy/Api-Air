@@ -83,7 +83,8 @@ func (us *DatabaseProvider) Authenticate(email, password string) (*User, error) 
 }
 
 func (ug *DbGorm) GetAllUsers() ([]byte, error) {
-	var users []User
+	var users []UserToFront
+
 	db := ug.db.Table("users").Order("firstname").Find(&users)
 	if db.Error != nil {
 		return nil, db.Error
@@ -190,6 +191,31 @@ func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end st
 	return jsonData, nil
 }
 
-func (ug *DbGorm) AddActuators(entity interface{}) error {
-	return ug.db.Table("actuators").Create(entity).Error
+func (ug *DbGorm) AddCondition(entity interface{}) error {
+	return ug.db.Table("conditions").Create(entity).Error
+}
+
+func (ug *DbGorm) GetAllConditions() ([]byte, error) {
+	var automations []Condition
+
+	db := ug.db.Table("conditions").Order("automation_name").Find(&automations)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+
+	jsonData, _ := json.Marshal(automations)
+	return jsonData, nil
+}
+
+func (ug *DbGorm) GetAllActuators() ([]byte, error) {
+	var actuators []Actuators
+
+	db := ug.db.Table("actuators").Order("id").Find(&actuators)
+	if db.Error != nil {
+		er, _ := json.Marshal(actuators)
+		return er, nil
+	}
+	jsonData, _ := json.Marshal(actuators)
+
+	return jsonData, nil
 }

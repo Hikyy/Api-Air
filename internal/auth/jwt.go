@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"App/internal/models"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
@@ -26,27 +25,4 @@ func GenerateJWT(email string) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
-}
-
-func DecodeJWT(token string) (*models.TokenClaim, error) {
-	var mySigningKey = []byte(Secretkey)
-
-	claims := &models.TokenClaim{}
-	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("There was an error in parsing")
-		}
-		return mySigningKey, nil
-	})
-
-	if err != nil {
-		fmt.Println("errrrrrrrrrr => ", err)
-		return nil, err
-	}
-
-	if !parsedToken.Valid {
-		//return nil, fmt.Errorf("Invalid token")
-	}
-
-	return claims, nil
 }

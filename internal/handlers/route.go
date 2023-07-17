@@ -19,9 +19,11 @@ func route(router *chi.Mux, userHandler *Users) {
 		r.Use(middlewares.CheckMJWTValidity)
 
 		// Routes protégées
-		r.Get("/profil", userHandler.GetAll)
-		r.Post("/actuators", userHandler.StoreActuators)
+		r.Post("/conditions", userHandler.StoreCondition)
+		r.Get("/profils", userHandler.IndexProfils)
 		r.Patch("/profil/user/{id}", userHandler.Update)
+		r.Get("/actuators", userHandler.IndexActuators)
+		r.Get("/conditions", userHandler.IndexCondition)
 		r.Get("/sensor-events", userHandler.IndexSensorEvents)
 		r.Get("/rooms", userHandler.IndexRooms)
 		r.Get("/room/{id}/sensor-events", userHandler.IndexRoomSensorEvents)

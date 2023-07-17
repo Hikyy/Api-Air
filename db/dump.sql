@@ -22,15 +22,10 @@ create sequence actions_action_id_seq
 
 alter sequence actions_action_id_seq owner to postgres;
 
-create sequence automations_automation_id_seq
+create sequence conditions_id_seq
     as integer;
 
-alter sequence automations_automation_id_seq owner to postgres;
-
-create sequence conditions_condition_id_seq
-    as integer;
-
-alter sequence conditions_condition_id_seq owner to postgres;
+alter sequence conditions_id_seq owner to postgres;
 
 create table "user_groups"
 (
@@ -101,16 +96,16 @@ create table "sensors"
 alter table "sensors"
     owner to postgres;
 
-create table "actuators"
+CREATE TABLE "actuators"
 (
-    actuator_id   serial
-        primary key,
-    actuator_name varchar(50) not null,
-    actuator_type varchar(50) not null,
-    room_id       integer
-        constraint "actuators_rooms_room_id_fk"
-            references "rooms"
+    id             serial primary key,
+    actuator_name  varchar(255) not null,
+    actuator_command varchar(255) not null,
+    data_key       varchar(25)  not null,
+    room_id        integer,
+    constraint "actuators_rooms_room_id_fk" foreign key (room_id) references "rooms"
 );
+
 
 alter table "actuators"
     owner to postgres;
@@ -210,58 +205,22 @@ create table "scene_actions"
 alter table "scene_actions"
     owner to postgres;
 
-create table "automations"
+CREATE TABLE "conditions"
 (
-    automation_id   integer default nextval('automations_automation_id_seq'::regclass) not null
-        primary key,
-    automation_name varchar(255)                                                       not null
-);
-
-alter table "automations"
-    owner to postgres;
-
-alter sequence automations_automation_id_seq owned by "automations".automation_id;
-
-create table "automation_actions"
-(
-    automation_id integer not null
-        references "automations",
-    action_id     integer not null
-        references "actions",
-    primary key (automation_id, action_id)
-);
-
-alter table "automation_actions"
-    owner to postgres;
-
-create table "conditions"
-(
-    condition_id   integer default nextval('conditions_condition_id_seq'::regclass) not null
-        primary key,
-    condition_name varchar(255)                                                     not null,
-    sensor_id      integer                                                          not null
-        references "sensors",
-    data_key       varchar(255)                                                     not null,
-    operator       varchar(10)                                                      not null,
-    value          double precision                                                 not null
+    id             serial primary key,
+    automation_name varchar(255) not null,
+    sensor_id      integer not null references "sensors",
+    data_key       varchar(255) not null,
+    operator       varchar(10) not null,
+    value          double precision not null,
+    actuator_id   integer not null,                                      -- Ajout de la colonne activator_id
+    constraint "conditions_actuator_actuator_id_fk" foreign key (actuator_id) references "actuators" (id)  -- Ajout de la clé étrangère
 );
 
 alter table "conditions"
     owner to postgres;
 
-alter sequence conditions_condition_id_seq owned by "conditions".condition_id;
-
-create table "automation_conditions"
-(
-    automation_id integer not null
-        references "automations",
-    condition_id  integer not null
-        references "conditions",
-    primary key (automation_id, condition_id)
-);
-
-alter table "automation_conditions"
-    owner to postgres;
+alter sequence conditions_id_seq owned by "conditions".id;
 
 CREATE OR REPLACE FUNCTION notify_event() RETURNS TRIGGER AS $$
 
@@ -358,3 +317,29 @@ VALUES
 
 INSERT INTO users (firstname, lastname, email, password, group_name)
 VALUES('Admin', 'Admin', 'admin@admin.fr', '$2a$10$hFZcsuSzOOgXNlPLVhY4WOnigHa0FQwVqUl9VG4UyHcYY9sg/faxO', 'administrator');
+
+INSERT INTO actuators(actuator_name, actuator_command, data_key ,room_id)
+VALUES ('HEATER_UP', '201', 'heat', 1),
+       ('HEATER_DOWN', '202', 'heat', 1),
+       ('AC_UP', '203', 'ac', 1),
+       ('AC_DOWN', '204', 'ac', 1),
+       ('VENT_UP', '205', 'vent', 1),
+       ('VENT_DOWN', '206', 'vent', 1),
+       ('LIGHT_ON', '207', 'light', 1),
+       ('LIGHT_OFF', '208', 'light', 1),
+       ('HEATER_UP', '201','heat', 2),
+       ('HEATER_DOWN', '202', 'heat', 2),
+       ('AC_UP', '203', 'ac', 2),
+       ('AC_DOWN', '204', 'ac', 2),
+       ('VENT_UP', '205', 'vent', 2),
+       ('VENT_DOWN', '206', 'vent', 2),
+       ('LIGHT_ON', '207', 'light', 2),
+       ('LIGHT_OFF', '208', 'light', 2),
+       ('HEATER_UP', '201', 'heat', 3),
+       ('HEATER_DOWN', '202', 'heat', 3),
+       ('AC_UP', '203', 'ac', 3),
+       ('AC_DOWN', '204', 'ac', 3),
+       ('VENT_UP', '205', 'vent', 3),
+       ('VENT_DOWN', '206', 'vent', 3),
+       ('LIGHT_ON', '207', 'light', 3),
+       ('LIGHT_OFF', '208', 'light', 3);

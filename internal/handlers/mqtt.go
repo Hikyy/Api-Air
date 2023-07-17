@@ -6,40 +6,42 @@ import (
 	"App/internal/models"
 	"encoding/json"
 	"fmt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"log"
+
+	// "log"
 	"net/http"
 	"os"
-	"os/signal"
 	"time"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+var (
+	connSuccess = make(chan bool)
+	connError   = make(chan error)
+)
 var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
-	//fmt.Printf("Messageeeeeeee %s received on topic %s\n", msg.Payload(), msg.Topic())
-	//Test()
 
 	var jsonString = msg.Payload()
 	var sensorData models.SensorData
 	var sensorDatatoDb models.SensorDataToDb
-	fmt.Println("cc")
+
 	err := json.Unmarshal([]byte(jsonString), &sensorData)
 	if err != nil {
 		fmt.Println("Erreur lors de la désérialisation JSON:", err)
 		return
 	}
+
 	datas := &Datas{
-		dts: models.Db, // Initialisez le champ dts avec l'objet approprié
+		dts: models.Db,
 	}
-	fmt.Println("caca")
+
 	var sendDataToDB = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
 		return dt.dts.AddDataToDb(data), nil
 	}
-
-	//fmt.Println("SensorAddress :", sensorData.SensorAddress)
 	fmt.Println("SensorID:", sensorData.SensorID)
 	fmt.Println("TimeEpoch  :", helpers.TimeStampConverter(sensorData.EventTimestamp))
-	converted := helpers.TimeStampConverter(sensorData.EventTimestamp)
 
+	converted := helpers.TimeStampConverter(sensorData.EventTimestamp)
 	sensorDatatoDb.SensorID = sensorData.SensorID
 	sensorDatatoDb.EventTimestamp = converted
 	sensorDatatoDb.EventData = sensorData.Data
@@ -50,21 +52,35 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	}
 }
 
-func SetMQTT(broker string, username string, password string, c chan os.Signal) {
-	c = make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-
+func setMQTT() MQTT.Client {
+	config := config.ClientConfig()
 	opts := MQTT.NewClientOptions()
-	opts.AddBroker(broker)
-	opts.SetUsername(username)
-	opts.SetPassword(password)
+
+	opts.AddBroker(config["broker"])
+	opts.SetUsername(config["username"])
+	opts.SetPassword(config["password"])
 	opts.SetDefaultPublishHandler(MessagePubHandler)
 	opts.SetOrderMatters(true)
-	client := MQTT.NewClient(opts)
 
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatal(token.Error())
+	client := MQTT.NewClient(opts)
+	token := client.Connect()
+
+	if token.Wait() && token.Error() != nil {
+		fmt.Println("MQTT client is not connected. Error:", token.Error())
+		return nil
+	} else {
+		fmt.Println("MQTT client is connected.")
 	}
+	return client
+}
+
+func SubscribeTopic(c chan os.Signal) {
+	client := setMQTT()
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		connError <- token.Error()
+		return
+	}
+
 	time.Sleep(time.Second)
 	topics := config.Salles
 
@@ -78,6 +94,45 @@ func SetMQTT(broker string, username string, password string, c chan os.Signal) 
 			}
 		}
 	}
+	connSuccess <- true
+	<-c
+}
 
-	<-c // Attente de l'interruption du signal (CTRL+C)
+func SendRequest(c chan os.Signal) {
+	client := setMQTT()
+	if !client.IsConnected() {
+		fmt.Println("MQTT client is not connected.")
+		return
+	}
+
+	select {
+	case err := <-connError: // Receive error from connError channel
+		fmt.Println("Erreur de connexion MQTT: ", err)
+		return
+	case <-connSuccess: // Success received from connSuccess channel
+
+		command := map[string]interface{}{
+			"cmd_id":              102,
+			"destination_address": "db0b2380-acf0-4688-b219-04ad29c369f3",
+			"ack_flags":           0,
+			"cmd_type":            208,
+		}
+
+		jsonData, err := json.Marshal(command)
+		if err != nil {
+			fmt.Println("Erreur lors de la conversion en JSON :", err)
+			return
+		}
+
+		topic := "groupe9/request/5e178fd2-5321-4cf5-b04c-4c6a8a827d88"
+		token := client.Publish(topic, 0, false, jsonData)
+		token.Wait()
+
+		if token.Error() != nil {
+			fmt.Printf("Error sending request to topic %s: %v\n", topic, token.Error())
+		} else {
+			fmt.Printf("Requete envoyée au topic: %s\n", topic)
+		}
+	}
+	<-c
 }
