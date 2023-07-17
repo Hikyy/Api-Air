@@ -5,9 +5,10 @@ type UserResource struct {
 		Id         string `json:"id"`
 		Type       string `json:"type"`
 		Attributes struct {
-			Firstname string `json:"firstname"`
-			Lastname  string `json:"lastname"`
-			Email     string `json:"email"`
+			Firstname  string `json:"firstname"`
+			Lastname   string `json:"lastname"`
+			Email      string `json:"email"`
+			Group_name string `json:"administrator"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
