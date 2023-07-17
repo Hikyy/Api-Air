@@ -1,34 +1,21 @@
 package handlers
 
 import (
-	"App/internal/auth"
 	"App/internal/helpers"
 	"App/internal/models"
 	"App/internal/requests"
+	"App/internal/resources"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
 	"net/http"
-	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	// "net/http"
 )
 
-// NewUsers for Parsing new user view/template in signup page
-func NewUsers(us models.EntityImplementService) *Users {
-	return &Users{
-		us: us,
-	}
-}
-
 // Methode create pour ajotuer new user "POST / signup"
-func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+func (handler *HandlerService) StoreUser(w http.ResponseWriter, r *http.Request) {
 	var form requests.StoreUserRequest
-
-	//success := models.Success{Success: true}
-	success := models.Success{Success: true}
-
-	successStatus, _ := json.Marshal(success)
-
-	// tx := models.GetTransaction(r.Context())
 
 	errPayload := ProcessRequest(&form, r, w)
 
@@ -36,253 +23,84 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashedPassword := helpers.HashPassword(form.Data.Attributes.Password)
+	var user models.User
 
-	user := models.User{
-		Lastname:  form.Data.Attributes.Lastname,
-		Firstname: form.Data.Attributes.Firstname,
-		Email:     form.Data.Attributes.Email,
-		Password:  hashedPassword,
+	form.Data.Attributes.Password = helpers.HashPassword(form.Data.Attributes.Password)
+
+	helpers.FillStruct(&user, form.Data.Attributes)
+
+	fmt.Printf("user: %+v\n", user)
+
+	if err := handler.use.Create(&user, w); err != nil {
+		err, _ := json.Marshal(err)
+		w.Write(err)
 	}
+	var userResource resources.UserResource
 
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-
-	if err := u.us.Create(&user); err != nil {
-		success = models.Success{Success: false}
-		successStatus, _ = json.Marshal(success)
-		w.Write(successStatus)
-		//http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(successStatus)
+	resources.GenerateResource(&userResource, user, w)
 }
 
-type response struct {
-	Success bool              `json:"success"`
-	Data    models.UserReturn `json:"data"`
-}
-
-func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func (handler *HandlerService) Login(w http.ResponseWriter, r *http.Request) {
 	var form requests.UserLoginRequest
 
 	ProcessRequest(&form, r, w)
 
-	user, err := u.us.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
-	if err != nil {
-		fmt.Println("user => ", user, "err =>>>>", err)
+	user, err := handler.use.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
 
-		success := models.Success{Success: false}
+	if err != nil {
+		success := models.Success{Success: false, Message: "Email or password is incorrect"}
 		successStatus, _ := json.Marshal(success)
+
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		w.Write(successStatus)
-		fmt.Println(err)
 		return
 	}
 
-	// Create a new response object and fill it with data
-	resp := response{
-		Success: true,
-	}
+	fmt.Printf("user: %+v\n", *user)
 
-	// Marshal the response object into JSON
-	respJson, _ := json.Marshal(resp)
+	handler.setCookieFromJWT(w, user.Email)
 
-	cookie := u.signIn(w, user)
-	http.SetCookie(w, &cookie)
-	w.Write(respJson) // Send the response
+	var userResource resources.UserResource
+
+	resources.GenerateResource(&userResource, user, w)
+}
+
+func (handler *HandlerService) IndexProfils(w http.ResponseWriter, r *http.Request) {
+	users, err := handler.use.GetAllUsers()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		err, _ := json.Marshal(err)
+		w.Write(err)
 		return
 	}
+
+	var userResource []resources.UserResource
+
+	resources.GenerateResource(&userResource, users, w)
 }
 
-func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
-	token, err := auth.GenerateJWT(user.Email)
-	fmt.Println(user.Email)
-	fmt.Println("methode signIn =>", token)
-	if err != nil {
-		fmt.Println(err)
-	}
-	cookie := models.Cookie
-	cookie.Value = token
-
-	return cookie
-}
-
-func (u *Users) IndexProfils(w http.ResponseWriter, r *http.Request) {
-	users, _ := u.us.GetAllUsers()
-
-	w.Write(users)
-}
-
-func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
+func (handler *HandlerService) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	role := r.URL.Query().Get("role")
 
 	user := models.User{}
-	err := u.us.ByID(id, &user)
+	err := handler.use.ByID(id, &user)
+
 	if err != nil {
 		// Gérer l'erreur
 		fmt.Println(err)
 	}
 
-	jsonUser, _ := json.Marshal(user)
-
 	fmt.Println(user)
-	sendToDb := u.us.Update(&user, "group_name", role)
-	sendToDbJson, _ := json.Marshal(sendToDb)
-	w.Write(sendToDbJson)
-	w.Write(jsonUser)
-}
 
-func (u *Users) IndexSensorEvents(w http.ResponseWriter, r *http.Request) {
-	day := r.URL.Query().Get("day")
-	id := r.URL.Query().Get("id")
-
-	idToInt, err := strconv.Atoi(id)
+	err = handler.use.Update(&user, "group_name", role, w)
 	if err != nil {
-		return
-	}
-
-	start, err := helpers.ConvertStringToStartOfDay(day)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	end, err := helpers.ConvertStringToEndOfDay(day)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	datas, err := u.us.GetDataFromDate(start, end, idToInt)
-	if err != nil {
-		fmt.Println("problèmeeeeeee => ", err)
-		return
-	}
-	w.Write(datas)
-}
-
-func (u *Users) IndexRooms(w http.ResponseWriter, r *http.Request) {
-	rooms, err := u.us.GetRooms()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	w.Write(rooms)
-}
-
-func (u *Users) IndexRoomSensorEvents(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
-	roomInt, err := helpers.TransformStringToInt(id)
-
-	if err != nil {
-		return
-	}
-	datas, err := u.us.GetAllDatasByRoom(roomInt)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	w.Write(datas)
-}
-
-func (u *Users) IndexRoomSensorEventsByDate(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	date := chi.URLParam(r, "date")
-
-	start, err := helpers.ConvertStringToStartOfDay(date)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	end, err := helpers.ConvertStringToEndOfDay(date)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	//roomInt, err := strconv.Atoi(id)
-	roomInt, err := helpers.TransformStringToInt(id)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	datas, err := u.us.GetAllDatasbyRoomBydate(roomInt, start, end)
-	w.Write(datas)
-}
-
-func (u *Users) IndexRoomSensorEventsBetweenTwoDates(w http.ResponseWriter, r *http.Request) {
-	startDay := chi.URLParam(r, "date-debut")
-	endDay := chi.URLParam(r, "date-fin")
-
-	id := chi.URLParam(r, "id")
-
-	start, err := helpers.ConvertStringToStartOfDay(startDay)
-	if err != nil {
+		// Gérer l'erreur
 		fmt.Println(err)
 	}
 
-	end, err := helpers.ConvertStringToEndOfDay(endDay)
-	if err != nil {
-		fmt.Println(err)
-	}
+	var userResource resources.UserResource
 
-	roomInt, err := helpers.TransformStringToInt(id)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	datas, err := u.us.GetAllDatasbyRoomBetweenTwoDays(roomInt, start, end)
-	if err != nil {
-		return
-	}
-	w.Write(datas)
-}
-
-func (u *Users) StoreCondition(w http.ResponseWriter, r *http.Request) {
-	var form requests.Condition
-
-	success := models.Success{Success: true}
-	successStatus, _ := json.Marshal(success)
-
-	errPayload := ProcessRequest(&form, r, w)
-	if errPayload != nil {
-		return
-	}
-
-	actuators := models.Condition{
-		AutomationName: form.Data.Attributes.AutomationName,
-		SensorId:       form.Data.Attributes.SensorId,
-		DataKey:        form.Data.Attributes.DataKey,
-		Operator:       form.Data.Attributes.Operator,
-		Value:          form.Data.Attributes.Value,
-		ActuatorId:     form.Data.Attributes.ActuatorId,
-	}
-
-	if err := u.us.AddCondition(&actuators); err != nil {
-		fmt.Println(err)
-		success := models.Success{Success: false}
-		successStatus, _ := json.Marshal(success)
-		w.Write(successStatus)
-		return
-	}
-	w.Write(successStatus)
-}
-func (u *Users) IndexCondition(w http.ResponseWriter, r *http.Request) {
-	datas, _ := u.us.GetAllConditions()
-	w.Write(datas)
-}
-
-func (u *Users) IndexActuators(w http.ResponseWriter, r *http.Request) {
-	datas, _ := u.us.GetAllActuators()
-	w.Write(datas)
+	resources.GenerateResource(&userResource, user, w)
 }
