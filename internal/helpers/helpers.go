@@ -3,12 +3,10 @@ package helpers
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 
 	"github.com/gorilla/schema"
-	"github.com/joho/godotenv"
 	"github.com/pjebs/optimus-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -39,14 +37,18 @@ func HashPassword(password string) string {
 }
 
 func InitOptimus() optimus.Optimus {
-	err := godotenv.Load()
+	// err := godotenv.Load()
 
-	if err != nil {
-		fmt.Println("Failed to load .env file:", err)
-	}
-	optimusPrime, _ := strconv.Atoi(os.Getenv("OPTIMUS_PRIME"))
-	optimusInverse, _ := strconv.Atoi(os.Getenv("OPTIMUS_INVERSE"))
-	optimusRandom, _ := strconv.Atoi(os.Getenv("OPTIMUS_RANDOM"))
+	// if err != nil {
+	// 	fmt.Println("Failed to load .env file:", err)
+	// }
+	// optimusPrime, _ := strconv.Atoi(os.Getenv("OPTIMUS_PRIME"))
+	// optimusInverse, _ := strconv.Atoi(os.Getenv("OPTIMUS_INVERSE"))
+	// optimusRandom, _ := strconv.Atoi(os.Getenv("OPTIMUS_RANDOM"))
+
+	optimusPrime := 1580030173
+	optimusInverse := 59260789
+	optimusRandom := 1163945558
 
 	fmt.Println("optimusPrime : ", optimusPrime, "optimusInverse : ", optimusInverse, "optimusRandom : ", optimusRandom)
 
