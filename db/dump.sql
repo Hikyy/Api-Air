@@ -22,15 +22,10 @@ create sequence actions_action_id_seq
 
 alter sequence actions_action_id_seq owner to postgres;
 
-create sequence automations_automation_id_seq
+create sequence conditions_id_seq
     as integer;
 
-alter sequence automations_automation_id_seq owner to postgres;
-
-create sequence conditions_condition_id_seq
-    as integer;
-
-alter sequence conditions_condition_id_seq owner to postgres;
+alter sequence conditions_id_seq owner to postgres;
 
 create table "user_groups"
 (
@@ -211,58 +206,20 @@ create table "scene_actions"
 alter table "scene_actions"
     owner to postgres;
 
-create table "automations"
+CREATE TABLE "conditions"
 (
-    automation_id   integer default nextval('automations_automation_id_seq'::regclass) not null
-        primary key,
-    automation_name varchar(255)                                                       not null
-);
-
-alter table "automations"
-    owner to postgres;
-
-alter sequence automations_automation_id_seq owned by "automations".automation_id;
-
-create table "automation_actions"
-(
-    automation_id integer not null
-        references "automations",
-    action_id     integer not null
-        references "actions",
-    primary key (automation_id, action_id)
-);
-
-alter table "automation_actions"
-    owner to postgres;
-
-create table "conditions"
-(
-    condition_id   integer default nextval('conditions_condition_id_seq'::regclass) not null
-        primary key,
-    condition_name varchar(255)                                                     not null,
-    sensor_id      integer                                                          not null
-        references "sensors",
-    data_key       varchar(255)                                                     not null,
-    operator       varchar(10)                                                      not null,
-    value          double precision                                                 not null
+    id             integer default nextval('conditions_id_seq'::regclass) not null primary key,
+    automation_name varchar(255)                                           not null,
+    sensor_id      integer                                                not null references "sensors",
+    data_key       varchar(255)                                           not null,
+    operator       varchar(10)                                            not null,
+    value          double precision                                       not null
 );
 
 alter table "conditions"
     owner to postgres;
 
-alter sequence conditions_condition_id_seq owned by "conditions".condition_id;
-
-create table "automation_conditions"
-(
-    automation_id integer not null
-        references "automations",
-    condition_id  integer not null
-        references "conditions",
-    primary key (automation_id, condition_id)
-);
-
-alter table "automation_conditions"
-    owner to postgres;
+alter sequence conditions_id_seq owned by "conditions".id;
 
 CREATE OR REPLACE FUNCTION notify_event() RETURNS TRIGGER AS $$
 
