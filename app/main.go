@@ -10,12 +10,6 @@ import (
 	"os/signal"
 )
 
-var (
-	broker   = "mqtt://mqtt.arcplex.fr:2295"
-	username = "groupe9"
-	password = "Pu3a76ZS0pgT"
-)
-
 func main() {
 
 	err := models.DatabaseServiceProvider()
