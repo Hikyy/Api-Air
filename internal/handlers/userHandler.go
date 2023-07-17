@@ -38,6 +38,7 @@ func (handler *HandlerService) StoreUser(w http.ResponseWriter, r *http.Request)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		w.Write(successStatus)
+		return
 	}
 	var userResource resources.UserResource
 
@@ -55,7 +56,7 @@ func (handler *HandlerService) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := handler.use.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
 
 	if err != nil {
-		success := models.Success{Success: false, Message: "Email or password is incorrect"}
+		success := models.Success{Success: false}
 		successStatus, _ := json.Marshal(success)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)

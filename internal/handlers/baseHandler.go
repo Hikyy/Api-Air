@@ -88,10 +88,10 @@ func ProcessRequest(structRequest interface{}, request *http.Request, writer htt
 	recursiveExploreStruct(structRequest, &errFormRequest)
 
 	if len(errFormRequest) != 0 {
-		jsonData, _ := json.Marshal(errFormRequest)
-
+		success := models.Success{Success: false}
+		successStatus, _ := json.Marshal(success)
 		writer.WriteHeader(http.StatusUnprocessableEntity)
-		writer.Write(jsonData)
+		writer.Write(successStatus)
 		return errFormRequest
 	}
 	return nil

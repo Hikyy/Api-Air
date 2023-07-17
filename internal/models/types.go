@@ -8,8 +8,7 @@ import (
 )
 
 type Success struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+	Success bool `json:"success"`
 }
 
 type TokenClaim struct {
