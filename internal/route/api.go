@@ -18,7 +18,7 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 
 	router.Group(func(r chi.Router) {
 		// Middleware d'authentification
-		r.Use(middlewares.CheckMJWTValidity)
+		// r.Use(middlewares.CheckMJWTValidity)
 
 		// Routes protégées
 
