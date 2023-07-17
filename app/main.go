@@ -1,13 +1,12 @@
 package main
 
 import (
-	"App/internal/handlers"
 	"App/internal/models"
 	"App/internal/route"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
+	// "os"
+	// "os/signal"
 )
 
 func main() {
@@ -19,8 +18,8 @@ func main() {
 	}
 
 	defer models.InitGorm.Close()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	// c := make(chan os.Signal, 1)
+	// signal.Notify(c, os.Interrupt)
 
 	//go handlers.SubscribeTopic(c)
 	//go handlers.SendRequest(c)
@@ -33,12 +32,12 @@ func main() {
 
 	router := route.SetupRouter()
 
-	customRouter := &handlers.CustomRouter{
-		Router: router,
-		C:      c,
-	}
+	// customRouter := &handlers.CustomRouter{
+	// 	Router: router,
+	// 	C:      c,
+	// }
 
 	fmt.Println("Server listening on port 8097")
 
-	http.ListenAndServe(":8097", customRouter)
+	http.ListenAndServe(":8098", router)
 }
