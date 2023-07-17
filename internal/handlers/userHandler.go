@@ -253,8 +253,8 @@ func (u *Users) IndexRoomSensorEventsBetweenTwoDates(w http.ResponseWriter, r *h
 	w.Write(datas)
 }
 
-func (u *Users) StoreAutoMations(w http.ResponseWriter, r *http.Request) {
-	var form requests.Automations
+func (u *Users) StoreCondition(w http.ResponseWriter, r *http.Request) {
+	var form requests.Condition
 
 	success := models.Success{Success: true}
 	successStatus, _ := json.Marshal(success)
@@ -264,10 +264,15 @@ func (u *Users) StoreAutoMations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actuators := models.Automations{
+	actuators := models.Condition{
 		AutomationName: form.Data.Attributes.AutomationName,
+		SensorId:       form.Data.Attributes.SensorId,
+		DataKey:        form.Data.Attributes.DataKey,
+		Operator:       form.Data.Attributes.Operator,
+		Value:          form.Data.Attributes.Value,
 	}
-	if err := u.us.AddActuators(&actuators); err != nil {
+
+	if err := u.us.AddCondition(&actuators); err != nil {
 		fmt.Println(err)
 		success := models.Success{Success: false}
 		successStatus, _ := json.Marshal(success)
@@ -276,7 +281,7 @@ func (u *Users) StoreAutoMations(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(successStatus)
 }
-func (u *Users) IndexAutomations(w http.ResponseWriter, r *http.Request) {
-	datas, _ := u.us.GetAllAutomations()
+func (u *Users) IndexCondition(w http.ResponseWriter, r *http.Request) {
+	datas, _ := u.us.GetAllConditions()
 	w.Write(datas)
 }

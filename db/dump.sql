@@ -96,15 +96,14 @@ create table "sensors"
 alter table "sensors"
     owner to postgres;
 
-create table "actuators"
+CREATE TABLE "actuators"
 (
-    id   serial
-        primary key,
-    actuator_name varchar(255) not null,
+    id             serial primary key,
+    actuator_name  varchar(255) not null,
     actuator_command varchar(255) not null,
-    room_id       integer
-        constraint "actuators_rooms_room_id_fk"
-            references "rooms"
+    data_key       varchar(25)  not null,
+    room_id        integer,
+    constraint "actuators_rooms_room_id_fk" foreign key (room_id) references "rooms"
 );
 
 
@@ -208,12 +207,14 @@ alter table "scene_actions"
 
 CREATE TABLE "conditions"
 (
-    id             integer default nextval('conditions_id_seq'::regclass) not null primary key,
-    automation_name varchar(255)                                           not null,
-    sensor_id      integer                                                not null references "sensors",
-    data_key       varchar(255)                                           not null,
-    operator       varchar(10)                                            not null,
-    value          double precision                                       not null
+    id             serial primary key,
+    automation_name varchar(255) not null,
+    sensor_id      integer not null references "sensors",
+    data_key       varchar(255) not null,
+    operator       varchar(10) not null,
+    value          double precision not null,
+    activator_id   integer not null,                                      -- Ajout de la colonne activator_id
+    constraint "conditions_activators_activator_id_fk" foreign key (activator_id) references "actuators" (id)  -- Ajout de la clé étrangère
 );
 
 alter table "conditions"
@@ -317,28 +318,28 @@ VALUES
 INSERT INTO users (firstname, lastname, email, password, group_name)
 VALUES('Admin', 'Admin', 'admin@admin.fr', '$2a$10$hFZcsuSzOOgXNlPLVhY4WOnigHa0FQwVqUl9VG4UyHcYY9sg/faxO', 'administrator');
 
-INSERT INTO actuators(actuator_name, actuator_command, room_id)
-VALUES ('HEATER_UP', '201', 1),
-       ('HEATER_DOWN', '202', 1),
-       ('AC_UP', '203', 1),
-       ('AC_DOWN', '204', 1),
-       ('VENT_UP', '205', 1),
-       ('VENT_DOWN', '206', 1),
-       ('LIGHT_ON', '207', 1),
-       ('LIGHT_OFF', '208', 1),
-       ('HEATER_UP', '201', 2),
-       ('HEATER_DOWN', '202', 2),
-       ('AC_UP', '203', 2),
-       ('AC_DOWN', '204', 2),
-       ('VENT_UP', '205', 2),
-       ('VENT_DOWN', '206', 2),
-       ('LIGHT_ON', '207', 2),
-       ('LIGHT_OFF', '208', 2),
-       ('HEATER_UP', '201', 3),
-       ('HEATER_DOWN', '202', 3),
-       ('AC_UP', '203', 3),
-       ('AC_DOWN', '204', 3),
-       ('VENT_UP', '205', 3),
-       ('VENT_DOWN', '206', 3),
-       ('LIGHT_ON', '207', 3),
-       ('LIGHT_OFF', '208', 3);
+INSERT INTO actuators(actuator_name, actuator_command, data_key ,room_id)
+VALUES ('HEATER_UP', '201', 'heat', 1),
+       ('HEATER_DOWN', '202', 'heat', 1),
+       ('AC_UP', '203', 'ac', 1),
+       ('AC_DOWN', '204', 'ac', 1),
+       ('VENT_UP', '205', 'vent', 1),
+       ('VENT_DOWN', '206', 'vent', 1),
+       ('LIGHT_ON', '207', 'light', 1),
+       ('LIGHT_OFF', '208', 'light', 1),
+       ('HEATER_UP', '201','heat', 2),
+       ('HEATER_DOWN', '202', 'heat', 2),
+       ('AC_UP', '203', 'ac', 2),
+       ('AC_DOWN', '204', 'ac', 2),
+       ('VENT_UP', '205', 'vent', 2),
+       ('VENT_DOWN', '206', 'vent', 2),
+       ('LIGHT_ON', '207', 'light', 2),
+       ('LIGHT_OFF', '208', 'light', 2),
+       ('HEATER_UP', '201', 'heat', 3),
+       ('HEATER_DOWN', '202', 'heat', 3),
+       ('AC_UP', '203', 'ac', 3),
+       ('AC_DOWN', '204', 'ac', 3),
+       ('VENT_UP', '205', 'vent', 3),
+       ('VENT_DOWN', '206', 'vent', 3),
+       ('LIGHT_ON', '207', 'light', 3),
+       ('LIGHT_OFF', '208', 'light', 3);

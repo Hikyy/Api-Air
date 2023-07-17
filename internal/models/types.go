@@ -49,8 +49,8 @@ type EntityDB interface {
 	GetAllDatasByRoom(room int) ([]byte, error)
 	GetAllDatasbyRoomBydate(room int, start string, end string) ([]byte, error)
 	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
-	AddActuators(entity interface{}) error
-	GetAllAutomations() ([]byte, error)
+	AddCondition(entity interface{}) error
+	GetAllConditions() ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -113,11 +113,6 @@ type TokenValidityToken struct {
 	Cookie *http.Cookie
 }
 
-func (c *TokenClaim) Valid() error {
-	// Ajoutez ici la validation supplémentaire des revendications si nécessaire
-	return c.StandardClaims.Valid()
-}
-
 var Cookie = http.Cookie{
 	Name:     "TokenBearer",
 	Value:    "",
@@ -144,13 +139,6 @@ type Rooms struct {
 	RoomId     int `json:"room_id" gorm:"room_id"`
 	RoomNumber int `json:"room_number" gorm:"room_number"`
 	FloorId    int `json:"floor_id" gorm:"floor_id"`
-}
-
-type Datas struct {
-	EventTimestamp time.Time              `json:"tx_time_ms_epoch"`
-	EventData      map[string]interface{} `json:"data" gorm:"json"`
-	SensorID       int                    `json:"sensor_id"`
-	RoomId         int                    `json:"room_id"`
 }
 
 type SensorEvent struct {
@@ -185,8 +173,12 @@ func (s *Sensors) AfterFind(tx *gorm.DB) error {
 	return nil
 }
 
-type Automations struct {
-	AutomationName string `json:"automation_name" gorm:"automation_name"`
+type Condition struct {
+	AutomationName string  `json:"automation_name" gorm:"automation_name"`
+	SensorId       int     `json:"sensor_id" gorm:"sensor_id"`
+	DataKey        string  `json:"data_key" gorm:"data_key"`
+	Operator       string  `json:"operator" gorm:"operator"`
+	Value          float64 `json:"value" gorm:"value"`
 }
 
 type userValFunc func(*User) error
