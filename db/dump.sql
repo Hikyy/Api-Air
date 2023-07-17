@@ -213,8 +213,8 @@ CREATE TABLE "conditions"
     data_key       varchar(255) not null,
     operator       varchar(10) not null,
     value          double precision not null,
-    activator_id   integer not null,                                      -- Ajout de la colonne activator_id
-    constraint "conditions_activators_activator_id_fk" foreign key (activator_id) references "actuators" (id)  -- Ajout de la clé étrangère
+    actuator_id   integer not null,                                      -- Ajout de la colonne activator_id
+    constraint "conditions_actuator_actuator_id_fk" foreign key (actuator_id) references "actuators" (id)  -- Ajout de la clé étrangère
 );
 
 alter table "conditions"

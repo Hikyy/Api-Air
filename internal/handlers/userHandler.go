@@ -270,6 +270,7 @@ func (u *Users) StoreCondition(w http.ResponseWriter, r *http.Request) {
 		DataKey:        form.Data.Attributes.DataKey,
 		Operator:       form.Data.Attributes.Operator,
 		Value:          form.Data.Attributes.Value,
+		ActuatorId:     form.Data.Attributes.ActuatorId,
 	}
 
 	if err := u.us.AddCondition(&actuators); err != nil {

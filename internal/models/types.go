@@ -179,6 +179,11 @@ type Condition struct {
 	DataKey        string  `json:"data_key" gorm:"data_key"`
 	Operator       string  `json:"operator" gorm:"operator"`
 	Value          float64 `json:"value" gorm:"value"`
+	ActuatorId     int     `json:"actuator_id" gorm:"actuator_id"`
+}
+
+type ConditionSensorId struct {
+	SensorId struct{} `gorm:"foreignKey:SensorID" gorm:"column:sensor_event"`
 }
 
 type userValFunc func(*User) error
