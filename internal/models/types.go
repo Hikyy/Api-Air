@@ -51,6 +51,7 @@ type EntityDB interface {
 	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]byte, error)
 	AddCondition(entity interface{}) error
 	GetAllConditions() ([]byte, error)
+	GetAllActuators() ([]byte, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model
@@ -184,6 +185,14 @@ type Condition struct {
 
 type ConditionSensorId struct {
 	SensorId struct{} `gorm:"foreignKey:SensorID" gorm:"column:sensor_event"`
+}
+
+type Actuators struct {
+	Id              int    `json:"id"`
+	ActuatorName    string `json:"actuator_name"`
+	ActuatorCommand string `json:"actuator_command"`
+	DataKey         string `json:"data_key"`
+	RoomId          int    `json:"room_id"`
 }
 
 type userValFunc func(*User) error

@@ -286,3 +286,8 @@ func (u *Users) IndexCondition(w http.ResponseWriter, r *http.Request) {
 	datas, _ := u.us.GetAllConditions()
 	w.Write(datas)
 }
+
+func (u *Users) IndexActuators(w http.ResponseWriter, r *http.Request) {
+	datas, _ := u.us.GetAllActuators()
+	w.Write(datas)
+}

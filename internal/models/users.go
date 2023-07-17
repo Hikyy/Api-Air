@@ -205,3 +205,16 @@ func (ug *DbGorm) GetAllConditions() ([]byte, error) {
 	jsonData, _ := json.Marshal(automations)
 	return jsonData, nil
 }
+
+func (ug *DbGorm) GetAllActuators() ([]byte, error) {
+	var actuators []Actuators
+
+	db := ug.db.Table("actuators").Order("id").Find(&actuators)
+	if db.Error != nil {
+		er, _ := json.Marshal(actuators)
+		return er, nil
+	}
+	jsonData, _ := json.Marshal(actuators)
+
+	return jsonData, nil
+}
