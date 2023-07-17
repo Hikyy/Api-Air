@@ -84,6 +84,10 @@ func (handler *HandlerService) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	role := r.URL.Query().Get("role")
 
+	id = helpers.DecodeId(id)
+
+	fmt.Println("id:", id)
+
 	user := models.User{}
 	err := handler.use.ByID(id, &user)
 
