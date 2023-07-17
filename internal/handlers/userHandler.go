@@ -43,7 +43,10 @@ func (handler *HandlerService) StoreUser(w http.ResponseWriter, r *http.Request)
 func (handler *HandlerService) Login(w http.ResponseWriter, r *http.Request) {
 	var form requests.UserLoginRequest
 
-	ProcessRequest(&form, r, w)
+	errPayload := ProcessRequest(&form, r, w)
+	if errPayload != nil {
+		return
+	}
 
 	user, err := handler.use.Authenticate(form.Data.Attributes.Email, form.Data.Attributes.Password)
 
