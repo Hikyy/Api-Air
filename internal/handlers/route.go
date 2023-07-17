@@ -20,10 +20,10 @@ func route(router *chi.Mux, userHandler *Users) {
 
 		// Routes protégées
 		r.Post("/conditions", userHandler.StoreCondition)
+		r.Get("/profils", userHandler.IndexProfils)
 		r.Patch("/profil/user/{id}", userHandler.Update)
 		r.Get("/actuators", userHandler.IndexActuators)
 		r.Get("/conditions", userHandler.IndexCondition)
-		r.Get("/profil", userHandler.GetAll)
 		r.Get("/sensor-events", userHandler.IndexSensorEvents)
 		r.Get("/rooms", userHandler.IndexRooms)
 		r.Get("/room/{id}/sensor-events", userHandler.IndexRoomSensorEvents)

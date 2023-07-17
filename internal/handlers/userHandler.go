@@ -117,7 +117,7 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) http.Cookie {
 	return cookie
 }
 
-func (u *Users) GetAll(w http.ResponseWriter, r *http.Request) {
+func (u *Users) IndexProfils(w http.ResponseWriter, r *http.Request) {
 	users, _ := u.us.GetAllUsers()
 	w.Write(users)
 }

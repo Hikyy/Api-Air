@@ -96,6 +96,14 @@ type User struct {
 	UpdatedAt  time.Time `gorm:"type:timestamp;autoUpdateTime:true"`
 }
 
+type UserToFront struct {
+	Id         int
+	Firstname  string
+	Lastname   string
+	Email      string `gorm:"not null;unique_index"`
+	Group_name string `gorm:"default:'user'"`
+}
+
 type Success struct {
 	Success bool `json:"success"`
 }
