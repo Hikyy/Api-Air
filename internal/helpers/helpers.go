@@ -50,7 +50,7 @@ func InitOptimus() optimus.Optimus {
 	optimusInverse := 59260789
 	optimusRandom := 1163945558
 
-	fmt.Println("optimusPrime : ", optimusPrime, "optimusInverse : ", optimusInverse, "optimusRandom : ", optimusRandom)
+	// fmt.Println("optimusPrime : ", optimusPrime, "optimusInverse : ", optimusInverse, "optimusRandom : ", optimusRandom)
 
 	return optimus.New(uint64(optimusPrime), uint64(optimusInverse), uint64(optimusRandom))
 }
@@ -133,7 +133,7 @@ func FillStruct(destination interface{}, source interface{}) {
 							if id == "" {
 								destinationField.Set(sourceValue.Field(j))
 							} else {
-								if sourceValue.Kind() == reflect.Int && destinationValue.Kind() == reflect.Int {
+								if destinationValue.Type().Field(i).Type == sourceField.Type {
 									id, err := strconv.Atoi(id)
 
 									if err != nil {
