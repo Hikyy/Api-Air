@@ -67,8 +67,7 @@ func (ug *DbGorm) GetAllDatasByRoom(room int) ([]SensorEvent, error) {
 		Select("sensor_events.id, sensor_events.event_timestamp, sensor_events.event_data, sensor_events.sensor_id").
 		Joins("JOIN sensors ON sensor_events.sensor_id = sensors.id").
 		Joins("JOIN rooms ON sensors.room_id = rooms.room_id").
-		Where("rooms.room_id = ?", room)
-		.Find(&sensorEvent).Error
+		Where("rooms.room_id = ?", room).Find(&sensorEvent).Error
 
 	if err != nil {
 		fmt.Println(err)
@@ -102,7 +101,6 @@ func (ug *DbGorm) GetDataFromDate(start string, end string, sensorId int) ([]Sen
 
 func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([]SensorEvent, error) {
 	var sensorEvent []SensorEvent
-
 
 	err := ug.Db.Model(&SensorEvent{}).
 		Select("sensor_events.id, sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
