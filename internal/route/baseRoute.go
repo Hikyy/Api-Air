@@ -24,6 +24,7 @@ func SetupRouter() http.Handler {
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
 		AllowCredentials: true,
 	})
 

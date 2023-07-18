@@ -71,6 +71,7 @@ create table "rooms"
         constraint rooms_pkey
             primary key,
     room_number integer                                                not null,
+    room_key   varchar(255)                                            not null,
     floor_id    integer                                                not null
         constraint rooms_floor_id_fkey
             references "floors"
@@ -95,6 +96,7 @@ create table "sensors"
 
 alter table "sensors"
     owner to postgres;
+
 
 CREATE TABLE "actuators"
 (
@@ -121,6 +123,11 @@ CREATE TABLE "public"."sensor_events" (
 ) WITH (oids = false);
 
 ALTER TABLE "sensor_events" OWNER TO postgres;
+
+ALTER TABLE sensor_events
+    ADD CONSTRAINT sensor_events_sensor_id_fkey
+    FOREIGN KEY (sensor_id)
+    REFERENCES sensors (id);
 
 CREATE SEQUENCE IF NOT EXISTS users_id_seq;
 
@@ -265,9 +272,11 @@ VALUES ('A');
 INSERT INTO "floors" (floor_number, building_id)
 VALUES (1, 'A');
 
-INSERT INTO "rooms" (room_number, floor_id)
-VALUES ('105', 1),('106', 1),('107',1);
-
+INSERT INTO "rooms" (room_number, room_key, floor_id)
+    VALUES 
+    ('105', '1ac45e2c-2bc2-4027-a7f6-0dbcafcad53b', 1),
+    ('106', 'a95cec4a-8aaf-4204-9fa2-b6c4aa8779e7', 1),
+    ('107', '5e178fd2-5321-4cf5-b04c-4c6a8a827d88', 1);
 
 
     INSERT INTO sensors(sensor_id, sensor_name,sensor_type,room_id)
