@@ -29,6 +29,7 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 		// Route User
 		r.Get("/profils", handlerService.IndexProfils)
 		r.Patch("/profil/user/{id}", handlerService.Update)
+		r.Delete("/profil/user/{id}", handlerService.Delete)
 
 		// Route Actuator
 		r.Get("/actuators", handlerService.IndexActuators)
