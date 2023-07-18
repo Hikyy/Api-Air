@@ -37,6 +37,10 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 		// Route Room
 		r.Get("/rooms", handlerService.IndexRooms)
 
+		// Route Sensors
+		r.Get("/sensors", handlerService.IndexSensors)
+
+
 		// Route Sensor Event
 		r.Get("/sensor-events", handlerService.IndexSensorEvents)
 		r.Get("/room/{id}/sensor-events", handlerService.IndexRoomSensorEvents)
