@@ -46,7 +46,7 @@ type EntityDB interface {
 	Ping() error
 
 	GetAllUsers() ([]User, error)
-	AddDataToDb(entity interface{}) error
+	AddDataToDb(entity *SensorDataToDb, room_key string) error
 	GetDataFromDate(start string, end string, id int) ([]SensorDatas, error)
 	GetRooms() ([]Rooms, error)
 	GetAllDatasByRoom(room int) ([]SensorEvent, error)

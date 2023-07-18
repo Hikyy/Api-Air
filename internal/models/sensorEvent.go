@@ -2,15 +2,29 @@ package models
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
 )
 
+type SensorEventTable struct {
+	Table  string          `json:"table"`
+	Action string          `json:"action"`
+	Data   SensorEventData `json:"data"`
+}
+
+type SensorEventData struct {
+	ID             int                    `json:"id"`
+	EventTimestamp string                 `json:"event_timestamp"`
+	EventData      map[string]interface{} `json:"event_data"`
+	SensorID       int                    `json:"sensor_id"`
+}
+
 type SensorEvent struct {
-	Id             int `json:"id"`
-	EventTimestamp time.Time
-	SensorID       uint
+	Id             int                    `json:"id"`
+	EventTimestamp time.Time              `json:"event_timestamp"`
+	SensorID       uint                   `json:"sensor_id"`
 	EventData      map[string]interface{} `json:"event_data" gorm:"json"`
 	SensorName     string                 `json:"sensor_name"`
 	SensorType     string                 `json:"sensor_type"`
@@ -24,8 +38,28 @@ type SensorDatas struct {
 	SensorID       int                    `json:"sensor_id"`
 }
 
-func (ug *DbGorm) AddDataToDb(entity interface{}) error {
-	return ug.Db.Table("sensor_events").Create(entity).Error
+func (ug *DbGorm) AddDataToDb(entity *SensorDataToDb, room_key string) error {
+
+	var roomId string
+	ug.Db.Table("rooms").Where("room_key = ?", room_key).Select("room_id").Find(&roomId)
+
+	roomIdInt, err := strconv.Atoi(roomId)
+	if err != nil {
+		fmt.Println("Error during conversion")
+		return err
+	}
+
+	var idSensor string
+	ug.Db.Table("sensors").Where("sensor_id = ?", entity.SensorID).Where("room_id = ?", roomIdInt).Select("id").Find(&idSensor)
+
+	entity.SensorID, err = strconv.Atoi(idSensor)
+	if err != nil {
+		fmt.Println("Error during conversion")
+		return err
+	}
+
+	db := ug.Db.Table("sensor_events").Create(&entity)
+	return db.Error
 }
 
 func (ug *DbGorm) GetAllDatasByRoom(room int) ([]SensorEvent, error) {
@@ -49,10 +83,10 @@ func (ug *DbGorm) GetAllDatasByRoom(room int) ([]SensorEvent, error) {
 
 func (s *Sensors) AfterFind(tx *gorm.DB) error {
 	sensorEvent := SensorEvent{
-		SensorID:   uint(s.SensorID),
-		SensorName: s.SensorName,
-		SensorType: s.SensorType,
-		RoomID:     s.RoomID,
+		SensorID: uint(s.SensorID),
+		// SensorName: s.SensorName,
+		// SensorType: s.SensorType,
+		// RoomID:     s.RoomID,
 	}
 
 	s.SensorEvents = append(s.SensorEvents, sensorEvent)

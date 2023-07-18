@@ -3,9 +3,10 @@ package models
 import "fmt"
 
 type Rooms struct {
-	Id         int `json:"id" gorm:"id"`
-	RoomNumber int `json:"room_number" gorm:"room_number"`
-	FloorId    int `json:"floor_id" gorm:"floor_id"`
+	Id         int    `json:"id" gorm:"id"`
+	RoomNumber int    `json:"room_number" gorm:"room_number"`
+	RoomKey    string `json:"room_key" gorm:"room_key"`
+	FloorId    int    `json:"floor_id" gorm:"floor_id"`
 }
 
 func (ug *DbGorm) GetRooms() ([]Rooms, error) {
