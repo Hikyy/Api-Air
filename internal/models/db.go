@@ -9,11 +9,12 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type DatabaseProvider struct {
 	EntityDB
-	db *gorm.DB
+	Db *gorm.DB
 }
 
 var Db *DatabaseProvider
@@ -21,7 +22,9 @@ var Db *DatabaseProvider
 var InitGorm *DbGorm
 
 func InitDB() (*DbGorm, error) {
-	conn, err := gorm.Open(postgres.Open(database.BuildConnectionString()), &gorm.Config{})
+	conn, err := gorm.Open(postgres.Open(database.BuildConnectionString()), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	if err != nil {
 		return nil, err
