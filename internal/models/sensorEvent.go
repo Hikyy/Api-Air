@@ -24,7 +24,7 @@ type SensorEventData struct {
 type SensorEvent struct {
 	Id             int `json:"id"`
 	EventTimestamp time.Time
-	SensorID       uint
+	SensorID       int                    `json:"sensor_id"`
 	EventData      map[string]interface{} `json:"event_data" gorm:"json"`
 }
 
@@ -67,24 +67,19 @@ func (ug *DbGorm) GetAllDatasByRoom(room int) ([]SensorEvent, error) {
 		Select("sensor_events.id, sensor_events.event_timestamp, sensor_events.event_data, sensor_events.sensor_id").
 		Joins("JOIN sensors ON sensor_events.sensor_id = sensors.id").
 		Joins("JOIN rooms ON sensors.room_id = rooms.room_id").
-		Where("rooms.room_id = ?", room).
-		Find(&sensorEvent).Error
+		Where("rooms.room_id = ?", room)
+		.Find(&sensorEvent).Error
 
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	fmt.Printf("%+v\n", sensorEvent)
 
 	return sensorEvent, nil
 }
 
 func (s *Sensors) AfterFind(tx *gorm.DB) error {
 	sensorEvent := SensorEvent{
-		SensorID: uint(s.SensorID),
-		// SensorName: s.SensorName,
-		// SensorType: s.SensorType,
-		// RoomID:     s.RoomID,
+		SensorID: s.SensorID,
 	}
 
 	s.SensorEvents = append(s.SensorEvents, sensorEvent)
@@ -96,7 +91,7 @@ func (ug *DbGorm) GetDataFromDate(start string, end string, sensorId int) ([]Sen
 
 	var datas []SensorDatas
 
-	db := ug.Db.Table("sensor_events").Where("event_timestamp >= ? AND event_timestamp <= ?", start, end).Where("sensor_id = ?", sensorId).Find(&datas)
+	db := ug.Db.Table("sensor_events").Where("event_timestamp >= ? AND event_timestamp <= ? AND sensor_id = ?", start, end, sensorId).Find(&datas)
 	if db.Error != nil {
 		fmt.Println(db.Error)
 		return nil, db.Error
@@ -108,8 +103,9 @@ func (ug *DbGorm) GetDataFromDate(start string, end string, sensorId int) ([]Sen
 func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([]SensorEvent, error) {
 	var sensorEvent []SensorEvent
 
+
 	err := ug.Db.Model(&SensorEvent{}).
-		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+		Select("sensor_events.id, sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
 		Joins("LEFT JOIN sensors ON sensors.id = sensor_events.sensor_id").
 		Joins("LEFT JOIN rooms ON sensors.room_id = rooms.room_id").
 		Where("rooms.room_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, start, end).
