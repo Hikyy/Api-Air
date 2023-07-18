@@ -1,7 +1,8 @@
 package requests
 
 type UserLoginRequest struct {
-	Data struct {
+	Success bool `json:"success"`
+	Data    struct {
 		Type       string `json:"type"`
 		Attributes struct {
 			Email    string `json:"email_address" validate:"email|min=6|required"`
