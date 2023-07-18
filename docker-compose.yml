@@ -16,7 +16,7 @@ services:
       - database
     networks:
       - app_network
-
+    command: nodemon --watch './**/*.go' --watch './**/**/*.go' --watch './templates/**/*.gohtml' --signal SIGTERM --exec 'go' run /go_app/app/main.go
 
   database:
     image: 'postgres:15-alpine'
