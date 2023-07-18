@@ -122,6 +122,8 @@ func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([
 func (ug *DbGorm) GetDatasByIdByRoomByDate(room int, sensors int, start string, end string) ([]SensorDatas, error) {
 	var sensorData []SensorDatas
 
+	fmt.Println(room, sensors, start, end)
+
 	err := ug.Db.Model(&SensorEvent{}).
 		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
 		Joins("LEFT JOIN sensors ON sensors.id = sensor_events.sensor_id").
