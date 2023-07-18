@@ -126,7 +126,10 @@ func FillStruct(destination interface{}, source interface{}) {
 
 					if destinationPkg == "App/internal/resources" {
 						id := ""
-						if sourceField.Name == "Id" && destinationValue.Type().Field(i).Name == "Id" {
+						checkIDFieldEnd := EndsWithAny(destinationValue.Type().Field(i).Name, "ID", "_id", "_Id", "_ID", "Id")
+						checkIDFieldStart := StartsWith(destinationValue.Type().Field(i).Name, "ID", "id", "Id")
+
+						if checkIDFieldEnd || checkIDFieldStart {
 							id = EncodeId(int(sourceValue.Field(j).Int()))
 						}
 						if destinationField.CanSet() {
@@ -163,7 +166,7 @@ func FillStruct(destination interface{}, source interface{}) {
 			} else if destinationField.Kind() == reflect.Slice {
 				processSliceField(destinationField, source)
 			} else {
-				fmt.Printf("Unhandled field type: %s\n", destinationField.Kind())
+				// fmt.Printf("Unhandled field type: %s\n", destinationField.Kind())
 			}
 		}
 	}
