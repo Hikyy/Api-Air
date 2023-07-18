@@ -22,13 +22,10 @@ type SensorEventData struct {
 }
 
 type SensorEvent struct {
-	Id             int                    `json:"id"`
-	EventTimestamp time.Time              `json:"event_timestamp"`
-	SensorID       uint                   `json:"sensor_id"`
+	Id             int `json:"id"`
+	EventTimestamp time.Time
+	SensorID       uint
 	EventData      map[string]interface{} `json:"event_data" gorm:"json"`
-	SensorName     string                 `json:"sensor_name"`
-	SensorType     string                 `json:"sensor_type"`
-	RoomID         int                    `json:"room_id"`
 }
 
 type SensorDatas struct {
@@ -67,9 +64,10 @@ func (ug *DbGorm) GetAllDatasByRoom(room int) ([]SensorEvent, error) {
 	var sensorEvent []SensorEvent
 
 	err := ug.Db.Model(&SensorEvent{}).
-		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
-		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
-		Where("sensors.room_id = ?", room).
+		Select("sensor_events.id, sensor_events.event_timestamp, sensor_events.event_data, sensor_events.sensor_id").
+		Joins("JOIN sensors ON sensor_events.sensor_id = sensors.id").
+		Joins("JOIN rooms ON sensors.room_id = rooms.room_id").
+		Where("rooms.room_id = ?", room).
 		Find(&sensorEvent).Error
 
 	if err != nil {
@@ -112,8 +110,9 @@ func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([
 
 	err := ug.Db.Model(&SensorEvent{}).
 		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
-		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
-		Where("sensors.room_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, start, end).
+		Joins("LEFT JOIN sensors ON sensors.id = sensor_events.sensor_id").
+		Joins("LEFT JOIN rooms ON sensors.room_id = rooms.room_id").
+		Where("rooms.room_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, start, end).
 		Find(&sensorEvent).Error
 
 	if err != nil {
@@ -126,16 +125,19 @@ func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([
 
 }
 
-func (ug *DbGorm) GetDatasByIdByRoomByDate(room int, sensors int, start string, end string) ([]SensorEvent, error) {
-	var sensorEvent []SensorEvent
+func (ug *DbGorm) GetDatasByIdByRoomByDate(room int, sensors int, start string, end string) ([]SensorDatas, error) {
+	var sensorData []SensorDatas
 
 	err := ug.Db.Model(&SensorEvent{}).
 		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
-		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
-		Where("sensors.room_id = ? AND sensor_id = ? AND event_timestamp >= ? AND event_timestamp <= ?", room, sensors, start, end).
-		Find(&sensorEvent)
+		Joins("LEFT JOIN sensors ON sensors.id = sensor_events.sensor_id").
+		Joins("LEFT JOIN rooms ON sensors.room_id = rooms.room_id").
+		Where("rooms.room_id = ? AND sensor_events.sensor_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, sensors, start, end).
+		Find(&sensorData).Error
+
 	if err != nil {
+		fmt.Println(err)
 		return nil, nil
 	}
-	return sensorEvent, nil
+	return sensorData, nil
 }

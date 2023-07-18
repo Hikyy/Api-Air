@@ -41,7 +41,7 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 		r.Get("/room/{id}/sensor-events", handlerService.IndexRoomSensorEvents)
 		r.Get("/room/{id}/sensor-events/{date}", handlerService.IndexRoomSensorEventsByDate)
 		r.Get("/room/{id}/sensor-events/{date-debut}/{date-fin}", handlerService.IndexRoomSensorEventsBetweenTwoDates)
-		r.Get("/room/{room_id}/sensor-events/{sensor_id}/{date}", handlerService.IndexSensorEventsByIdByRoomByDate)
+		r.Get("/room/sensor-events", handlerService.IndexSensorEventsByIdByRoomByDate)
 	})
 
 	router.NotFound(notfound)
