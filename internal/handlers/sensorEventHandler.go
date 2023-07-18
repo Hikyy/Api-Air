@@ -123,3 +123,30 @@ func (handler *HandlerService) IndexSensorEvents(w http.ResponseWriter, r *http.
 
 	resources.GenerateResource(&sensorDataFromDate, data, w)
 }
+
+func (handler *HandlerService) IndexSensorEventsByIdByRoomByDate(w http.ResponseWriter, r *http.Request) {
+	room := chi.URLParam(r, "room_id")
+	sensor := chi.URLParam(r, "sensor_id")
+	date := chi.URLParam(r, "date")
+
+	roomString, err := helpers.TransformStringToInt(room)
+	if err != nil {
+		return
+	}
+
+	sensorString, err := helpers.TransformStringToInt(sensor)
+	if err != nil {
+		return
+	}
+
+	dateStart, err := helpers.ConvertStringToStartOfDay(date)
+	if err != nil {
+		return
+	}
+
+	data, err := handler.IndexSensorEventsByIdByRoomByDate()
+	if err != nil {
+		return
+	}
+	w.Write(data)
+}

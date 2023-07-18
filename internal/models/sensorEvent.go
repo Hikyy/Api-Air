@@ -125,3 +125,17 @@ func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([
 	return sensorEvent, nil
 
 }
+
+func (ug *DbGorm) GetDatasByIdByRoomByDate(room int, sensors int, start string, end string) ([]SensorEvent, error) {
+	var sensorEvent []SensorEvent
+
+	err := ug.Db.Model(&SensorEvent{}).
+		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+		Joins("LEFT JOIN sensors ON sensors.sensor_id = sensor_events.sensor_id").
+		Where("sensors.room_id = ? AND sensor_id = ? AND event_timestamp >= ? AND event_timestamp <= ?", room, sensors, start, end).
+		Find(&sensorEvent)
+	if err != nil {
+		return nil, nil
+	}
+	return sensorEvent, nil
+}
