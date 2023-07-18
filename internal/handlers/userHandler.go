@@ -40,6 +40,7 @@ func (handler *HandlerService) StoreUser(w http.ResponseWriter, r *http.Request)
 		w.Write(successStatus)
 		return
 	}
+
 	var userResource resources.UserResource
 
 	resources.GenerateResource(&userResource, user, w)
@@ -50,6 +51,7 @@ func (handler *HandlerService) Login(w http.ResponseWriter, r *http.Request) {
 
 	errPayload := ProcessRequest(&form, r, w)
 	if errPayload != nil {
+		fmt.Println("errPayload:", errPayload)
 		return
 	}
 
@@ -89,12 +91,8 @@ func (handler *HandlerService) IndexProfils(w http.ResponseWriter, r *http.Reque
 }
 
 func (handler *HandlerService) Update(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := helpers.DecodeId(chi.URLParam(r, "id"))
 	role := r.URL.Query().Get("role")
-
-	id = helpers.DecodeId(id)
-
-	fmt.Println("id:", id)
 
 	user := models.User{}
 	err := handler.use.ByID(id, &user)
@@ -115,4 +113,18 @@ func (handler *HandlerService) Update(w http.ResponseWriter, r *http.Request) {
 	var userResource resources.UserResource
 
 	resources.GenerateResource(&userResource, user, w)
+}
+
+func (handler *HandlerService) Delete(w http.ResponseWriter, r *http.Request) {
+	id := helpers.DecodeId(chi.URLParam(r, "id"))
+
+	user := models.User{}
+
+	err := handler.use.ByID(id, &user)
+	if err != nil {
+		// Gérer l'erreur
+		fmt.Println(err)
+	}
+
+	models.InitGorm.Db.Delete(&user)
 }
