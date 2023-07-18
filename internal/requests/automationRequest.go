@@ -1,6 +1,6 @@
 package requests
 
-type Condition struct {
+type ConditionRequest struct {
 	Data struct {
 		Type       string `json:"type"`
 		Attributes struct {
