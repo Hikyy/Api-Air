@@ -1,0 +1,8 @@
+FROM golang:1.19
+RUN adduser --disabled-password --gecos '' golang
+ENV CGO_ENABLED=0
+WORKDIR /go_app
+COPY --chown=golang:golang . .
+USER golang
+
+CMD go run /go_app/app/main.go

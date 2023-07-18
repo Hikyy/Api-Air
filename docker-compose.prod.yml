@@ -1,0 +1,40 @@
+version: '3.6'
+
+services:
+  go:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - '8080:8097'
+    env_file:
+      - .env
+    depends_on: 
+      - database
+    networks:
+      - app_network
+
+  database:
+    image: 'postgres:15-alpine'
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: 'root'
+      POSTGRES_PASSWORD: 'root'
+      POSTGRESS_DB: 'postgres'
+    restart: always
+    volumes:
+      - ./db/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    networks:
+      - app_network
+
+  adminer:
+    image: adminer:4.8.1
+    restart: always
+    ports: 
+        - "1333:8080"
+
+networks:
+  app_network:
+    driver: bridge
