@@ -1,7 +1,12 @@
 package handlers
 
 import (
+	"App/internal/helpers"
+	"App/internal/models"
+	"App/internal/requests"
 	"App/internal/resources"
+	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -14,32 +19,28 @@ func (handler *HandlerService) IndexCondition(w http.ResponseWriter, r *http.Req
 }
 
 func (handler *HandlerService) StoreCondition(w http.ResponseWriter, r *http.Request) {
-	// var form requests.ConditionRequest
+	var form requests.ConditionRequest
 
-	// errPayload := ProcessRequest(&form, r, w)
-	// if errPayload != nil {
-	// 	return
-	// }
+	errPayload := ProcessRequest(&form, r, w)
+	if errPayload != nil {
+		return
+	}
 
-	// fmt.Println("form:", form)
+	var condition models.Conditions
 
-	// var condition models.Conditions
+	helpers.FillStruct(&condition, form.Data.Attributes)
 
-	// helpers.FillStruct(&condition, form.Data.Attributes)
+	if err := handler.use.AddCondition(&condition); err != nil {
+		fmt.Println("err:", err)
+		// success := models.Success{Success: false}
+		successStatus, _ := json.Marshal(err)
 
-	// fmt.Println("condition", condition)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(successStatus)
+		return
+	}
 
-	// if err := handler.use.AddCondition(&condition); err != nil {
-	// 	fmt.Println("err:", err)
-	// 	// success := models.Success{Success: false}
-	// 	successStatus, _ := json.Marshal(err)
+	var actuatorsResource resources.ConditionResource
 
-	// 	w.WriteHeader(http.StatusUnprocessableEntity)
-	// 	w.Write(successStatus)
-	// 	return
-	// }
-
-	// var actuatorsResource resources.ConditionResource
-
-	// resources.GenerateResource(&actuatorsResource, condition, w)
+	resources.GenerateResource(&actuatorsResource, condition, w)
 }
