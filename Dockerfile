@@ -1,4 +1,4 @@
-FROM golang:1.20 as BUILDER
+FROM golang:1.19 as BUILDER
 
 ENV CGO_ENABLED=0
 
@@ -8,4 +8,6 @@ COPY . .
 
 RUN echo " !! À chaque modifications pour run le programme : go run main.go !!"
 
-CMD go run ./app
+
+
+CMD go run /go_app/app/main.go
