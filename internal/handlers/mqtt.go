@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	// "log"
-	"net/http"
+
 	"os"
 	"time"
 
@@ -22,6 +22,7 @@ var (
 var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 
 	var jsonString = msg.Payload()
+
 	var sensorData models.SensorData
 	var sensorDatatoDb models.SensorDataToDb
 
@@ -31,15 +32,19 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 		return
 	}
 
+	sourceAddress, err := getSourceAddress(msg)
+	if err != nil {
+		fmt.Println("Erreur lors de la désérialisation JSON:", err)
+		return
+	}
+
 	datas := &Datas{
 		dts: models.Db,
 	}
 
-	var sendDataToDB = func(dt *Datas, data *models.SensorDataToDb) (error, *http.Request) {
-		return dt.dts.AddDataToDb(data), nil
+	var sendDataToDB = func(dt *Datas, data *models.SensorDataToDb, sourceAddress string) {
+		dt.dts.AddDataToDb(data, sourceAddress)
 	}
-	fmt.Println("SensorID:", sensorData.SensorID)
-	fmt.Println("TimeEpoch  :", helpers.TimeStampConverter(sensorData.EventTimestamp))
 
 	converted := helpers.TimeStampConverter(sensorData.EventTimestamp)
 	sensorDatatoDb.SensorID = sensorData.SensorID
@@ -47,8 +52,8 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	sensorDatatoDb.EventData = sensorData.Data
 
 	for key, value := range sensorData.Data {
-		sendDataToDB(datas, &sensorDatatoDb)
-		fmt.Printf("%s: %v\n", key, value)
+		sendDataToDB(datas, &sensorDatatoDb, sourceAddress)
+		fmt.Printf("%s : %v\n", key, value)
 	}
 }
 
@@ -135,4 +140,20 @@ func SendRequest(c chan os.Signal) {
 		}
 	}
 	<-c
+}
+
+func getSourceAddress(message MQTT.Message) (string, error) {
+	var payload map[string]interface{}
+
+	err := json.Unmarshal([]byte(message.Payload()), &payload)
+
+	if err != nil {
+		return "", err
+	}
+
+	if sourceAddress, ok := payload["source_address"].(string); ok {
+		return sourceAddress, nil
+	}
+
+	return "", fmt.Errorf("Clé 'source_address' introuvable ou de type incorrect")
 }
