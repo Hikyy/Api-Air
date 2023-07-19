@@ -88,6 +88,7 @@ func SubscribeTopic(c chan os.Signal) {
 
 	time.Sleep(time.Second)
 	topics := config.Salles
+	time.Sleep(5 * time.Minute)
 
 	for key, value := range topics {
 		for keySensor, valueSensor := range value {
