@@ -3,7 +3,6 @@ package route
 import (
 	"App/internal/handlers"
 	"App/internal/middlewares"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -40,7 +39,6 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 		// Route Sensors
 		r.Get("/sensors", handlerService.IndexSensors)
 
-
 		// Route Sensor Event
 		r.Get("/sensor-events", handlerService.IndexSensorEvents)
 		r.Get("/room/{id}/sensor-events", handlerService.IndexRoomSensorEvents)
@@ -48,7 +46,6 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 		r.Get("/room/{id}/sensor-events/{date-debut}/{date-fin}", handlerService.IndexRoomSensorEventsBetweenTwoDates)
 		r.Get("/room/sensor-events", handlerService.IndexSensorEventsByIdByRoomByDate)
 		r.Get("/room/sensor-events", handlerService.IndexSensorEventsByIdByRoomBetweenTwoDate)
-
 	})
 
 	router.NotFound(notfound)

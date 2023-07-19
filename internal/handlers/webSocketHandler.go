@@ -20,11 +20,20 @@ var (
 	password = "root"
 	dbname   = "postgres"
 )
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 var clients = make(map[*websocket.Conn]bool)
 
-func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
-	// Upgrade la connexion HTTP en une connexion WebSocket
+type WebSocketContext struct {
+	C        chan os.Signal
+	Listener *pq.Listener
+}
+
+func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request, ctx *WebSocketContext) {
+	// upgrade en ws
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Erreur lors de la mise à niveau du WebSocket :", err)
@@ -35,7 +44,6 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("WebSocket connecté.")
 	clients[conn] = true // Ajoutez le client WebSocket à la liste
 
-	// Commencez à écouter les messages WebSocket du client (optionnel)
 	for {
 		_, _, err := conn.ReadMessage()
 		if err != nil {
@@ -47,7 +55,6 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartSQL(c chan os.Signal) {
-	//var conninfo string = "dbname=exampledb user=webapp password=webapp"
 	conninfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, dbuser, password, dbname)
 
 	_, err := sql.Open("postgres", conninfo)
@@ -67,7 +74,17 @@ func StartSQL(c chan os.Signal) {
 		panic(err)
 	}
 
-	http.Handle("/ws", http.HandlerFunc(handleWebSocketConnection))
+	ctx := &WebSocketContext{
+		C:        c,
+		Listener: listener,
+	}
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		HandleWebSocketConnection(w, r, ctx)
+
+	})
+
+	go http.ListenAndServe(":9098", nil)
 
 	fmt.Println("Start monitoring PostgreSQL...")
 	for {
@@ -102,7 +119,7 @@ func WaitForNotification(l *pq.Listener) {
 			sendToClients(prettyJSON.Bytes())
 			return
 		case <-time.After(10 * time.Second):
-			fmt.Println("Received no events for 90 seconds, checking connection")
+			fmt.Println("Received no events for 10 seconds, checking connection")
 			go func() {
 				l.Ping()
 			}()
