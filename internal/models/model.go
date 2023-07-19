@@ -50,6 +50,7 @@ type EntityDB interface {
 	AddDataToDb(entity *SensorDataToDb, room_key string) error
 	GetDataFromDate(start string, end string, id int) ([]SensorDatas, error)
 	GetRooms() ([]Rooms, error)
+	GetAllSensorRooms() ([]Rooms, error)
 	GetAllDatasByRoom(room int) ([]SensorEvent, error)
 	GetAllDatasbyRoomByDate(room int, start string, end string) ([]SensorEvent, error)
 	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]SensorEvent, error)

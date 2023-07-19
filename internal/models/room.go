@@ -3,10 +3,11 @@ package models
 import "fmt"
 
 type Rooms struct {
-	RoomId     int    `json:"id" gorm:"room_id"`
-	RoomNumber int    `json:"room_number" gorm:"room_number"`
-	RoomKey    string `json:"room_key" gorm:"room_key"`
-	FloorId    int    `json:"floor_id" gorm:"floor_id"`
+	RoomId     int       `gorm:"column:room_id;primary_key" json:"id,omitempty"`
+	RoomNumber int       `gorm:"column:room_number" json:"room_number"`
+	RoomKey    string    `gorm:"column:room_key" json:"room_key"`
+	FloorId    int       `gorm:"column:floor_id" json:"floor_id"`
+	Sensors    []Sensors `gorm:"foreignKey:RoomID" json:"sensors"`
 }
 
 func (ug *DbGorm) GetRooms() ([]Rooms, error) {
@@ -37,4 +38,13 @@ func (ug *DbGorm) GetAllDatasbyRoomBetweenTwoDays(room int, start string, end st
 	fmt.Printf("%+v\n", sensorData)
 
 	return sensorData, nil
+}
+
+func (ug *DbGorm) GetAllSensorRooms() ([]Rooms, error) {
+	var rooms []Rooms
+
+	ug.Db.Preload("Sensors").Find(&rooms)
+	fmt.Printf("rooms : %+v\n", rooms)
+
+	return rooms, nil
 }

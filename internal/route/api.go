@@ -39,7 +39,7 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 
 		// Route Sensors
 		r.Get("/sensors", handlerService.IndexSensors)
-
+		r.Get("/sensor/room", handlerService.IndexRoomSensors)
 
 		// Route Sensor Event
 		r.Get("/sensor-events", handlerService.IndexSensorEvents)
