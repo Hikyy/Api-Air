@@ -43,9 +43,7 @@ func (handler *HandlerService) StoreCondition(w http.ResponseWriter, r *http.Req
 
 	if err := handler.use.AddCondition(&condition); err != nil {
 		fmt.Println("err:", err)
-		// success := models.Success{Success: false}
 		successStatus, _ := json.Marshal(err)
-
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		w.Write(successStatus)
 		return
