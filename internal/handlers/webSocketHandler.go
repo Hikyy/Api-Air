@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"App/internal/helpers"
+	"App/internal/models"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -116,6 +118,15 @@ func WaitForNotification(l *pq.Listener) {
 				return
 			}
 			fmt.Println(string(prettyJSON.Bytes()))
+			jsonData := prettyJSON.Bytes()
+			if err != nil {
+				return
+			}
+			if err != nil {
+				fmt.Println("Erreur lors du décodage JSON:", err)
+				return
+			}
+			helpers.CompareConditions([]models.Conditions{}, jsonData)
 			sendToClients(prettyJSON.Bytes())
 			return
 		case <-time.After(10 * time.Second):
