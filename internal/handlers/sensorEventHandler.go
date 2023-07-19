@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"App/internal/helpers"
+	"App/internal/models"
 	"App/internal/resources"
+	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
 
 func (handler *HandlerService) IndexRoomSensorEvents(w http.ResponseWriter, r *http.Request) {
@@ -162,6 +163,7 @@ func (handler *HandlerService) IndexSensorEventsByIdByRoomByDate(w http.Response
 	resources.GenerateResource(&sensorDataFromDate, data, w)
 
 }
+
 func (handler *HandlerService) IndexSensorEventsByIdByRoomBetweenTwoDate(w http.ResponseWriter, r *http.Request) {
 
 	room := r.URL.Query().Get("room_id")
@@ -194,7 +196,36 @@ func (handler *HandlerService) IndexSensorEventsByIdByRoomBetweenTwoDate(w http.
 		return
 	}
 
-	var sensorDataFromDate []resources.SensorDataFromDate
-	resources.GenerateResource(&sensorDataFromDate, data, w)
+	//var sensorDataFromDate []resources.SensorDataFromDate
+	//test, _ := json.Marshal(sensorDataFromDate)
+	//w.Write(test)
 
+	test := convertToResource(data)
+	lol, _ := json.Marshal(test)
+
+	w.Write(lol)
+
+	//resources.GenerateResource(&sensorDataFromDate, data, w)
+
+}
+
+func convertToResource(sensorEvents []models.SensorEventNew) []resources.SensorDataFromDateResource {
+	var sensorDataList []resources.SensorDataFromDateResource
+
+	for _, sensorEvent := range sensorEvents {
+		resource := resources.SensorDataFromDateResource{
+			Data: resources.SensorData{
+				Type: "sensor_data",
+				Id:   fmt.Sprintf("%d", sensorEvent.SensorID),
+				Attributes: resources.SensorDataAttributes{
+					EventTimestamp: sensorEvent.EventTimestamp,
+					EventData:      sensorEvent.EventData.(map[string]interface{}),
+					SensorID:       sensorEvent.SensorID,
+				},
+			},
+		}
+		sensorDataList = append(sensorDataList, resource)
+	}
+
+	return sensorDataList
 }

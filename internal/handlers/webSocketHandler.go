@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"App/internal/helpers"
 	"App/internal/models"
 	"bytes"
 	"database/sql"
@@ -118,7 +117,6 @@ func WaitForNotification(l *pq.Listener) {
 				return
 			}
 			fmt.Println(string(prettyJSON.Bytes()))
-			jsonData := prettyJSON.Bytes()
 			if err != nil {
 				return
 			}
@@ -126,7 +124,8 @@ func WaitForNotification(l *pq.Listener) {
 				fmt.Println("Erreur lors du décodage JSON:", err)
 				return
 			}
-			helpers.CompareConditions([]models.Conditions{}, jsonData)
+			decodedMessage := BreakWs(&prettyJSON)
+			CompareConditions([]models.Conditions{}, decodedMessage)
 			sendToClients(prettyJSON.Bytes())
 			return
 		case <-time.After(10 * time.Second):
@@ -137,4 +136,54 @@ func WaitForNotification(l *pq.Listener) {
 			return
 		}
 	}
+}
+
+func CompareConditions(Conditions []models.Conditions, websocket []models.SensorEventJson) {
+	datas, err := models.GetConditions()
+	if err != nil {
+		return
+	}
+	Conditions = datas
+	fmt.Println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+	fmt.Println(websocket)
+	fmt.Println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+
+	fmt.Println(Conditions)
+	for _, condition := range Conditions {
+		fmt.Println(condition.DataKey, condition.Operator, condition.Value)
+		for _, event := range websocket {
+			fmt.Println("##################################################################")
+			fmt.Println("eventtttt => data.data", event.Data.Data)
+			fmt.Println("eventtttt => data.sensorId", event.Data.SensorID)
+			for _, test := range event.Data.Data {
+				fmt.Println("C LA LUTTE FINALE", test)
+			}
+		}
+		switch condition.Operator {
+		case ">":
+			// Avant cela, il faut vérifier si condition.DataKey est égal à JWTWS.DataKey
+			// En d'autres termes, ici, si JWTWS.Value > condition.Value =>
+			fmt.Println("case : condition.DataKey ", condition.DataKey, " EST ", condition.Operator, " A ", condition.Value)
+			break
+		case "<":
+			fmt.Println("case : ", condition.Operator)
+			break
+		case "=":
+			fmt.Println("case : ", condition.Operator)
+			break
+		}
+	}
+}
+
+func BreakWs(webSocket *bytes.Buffer) []models.SensorEventJson {
+	webSocketData := models.SensorEventJson{}
+
+	if err := json.Unmarshal(webSocket.Bytes(), &webSocketData); err != nil {
+		fmt.Println("Erreur lors du décodage JSON:", err)
+	}
+
+	fmt.Println("webSocketData =>", webSocketData)
+
+	decodedMessages := []models.SensorEventJson{webSocketData}
+	return decodedMessages
 }
