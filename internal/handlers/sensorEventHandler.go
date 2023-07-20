@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"App/internal/helpers"
-	"App/internal/models"
 	"App/internal/resources"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (handler *HandlerService) IndexRoomSensorEvents(w http.ResponseWriter, r *http.Request) {
@@ -171,6 +171,10 @@ func (handler *HandlerService) IndexSensorEventsByIdByRoomBetweenTwoDate(w http.
 	dateStart := r.URL.Query().Get("start_date")
 	dateEnd := r.URL.Query().Get("end_date")
 
+	room = helpers.DecodeId(room)
+
+	sensor = helpers.DecodeId(sensor)
+
 	roomInt, err := helpers.TransformStringToInt(room)
 	if err != nil {
 		return
@@ -191,41 +195,14 @@ func (handler *HandlerService) IndexSensorEventsByIdByRoomBetweenTwoDate(w http.
 		return
 	}
 
-	data, err := handler.use.GetDatasByIdByRoomByDate(roomInt, sensorInt, dateStartToTime, dateEndtoTime)
+	sensorDataFromDate, err := handler.use.GetDatasByIdByRoomByDate(roomInt, sensorInt, dateStartToTime, dateEndtoTime)
 	if err != nil {
 		return
 	}
 
-	//var sensorDataFromDate []resources.SensorDataFromDate
-	//test, _ := json.Marshal(sensorDataFromDate)
-	//w.Write(test)
+	resource := resources.GenerateResourceSensorRoom(sensorDataFromDate, w)
 
-	test := convertToResource(data)
-	lol, _ := json.Marshal(test)
+	respJson, _ := json.Marshal(resource)
 
-	w.Write(lol)
-
-	//resources.GenerateResource(&sensorDataFromDate, data, w)
-
-}
-
-func convertToResource(sensorEvents []models.SensorEventNew) []resources.SensorDataFromDateResource {
-	var sensorDataList []resources.SensorDataFromDateResource
-
-	for _, sensorEvent := range sensorEvents {
-		resource := resources.SensorDataFromDateResource{
-			Data: resources.SensorData{
-				Type: "sensor_data",
-				Id:   fmt.Sprintf("%d", sensorEvent.SensorID),
-				Attributes: resources.SensorDataAttributes{
-					EventTimestamp: sensorEvent.EventTimestamp,
-					EventData:      sensorEvent.EventData.(map[string]interface{}),
-					SensorID:       sensorEvent.SensorID,
-				},
-			},
-		}
-		sensorDataList = append(sensorDataList, resource)
-	}
-
-	return sensorDataList
+	w.Write(respJson)
 }

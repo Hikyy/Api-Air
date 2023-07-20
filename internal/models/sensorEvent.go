@@ -44,23 +44,18 @@ type SensorEventNew struct {
 	RoomID         int         `gorm:"column:room_id"`
 }
 
+type SensorEvents struct {
+	ID             uint        `gorm:"column:id"`
+	EventTimestamp string      `gorm:"column:event_timestamp"`
+	SensorID       string      `gorm:"column:sensor_id"`
+	Type           string      `gorm:"column:type"`
+	Value          interface{} `gorm:"column:value"`
+}
+
 type ParsedEventData struct {
 	Type  string `json:"type"`
 	Value int    `json:"value"`
 }
-
-//type SensorDatas struct {
-//	Id             int       `json:"id"`
-//	EventTimestamp time.Time `json:"tx_time_ms_epoch"`
-//	EventData      Test
-//	SensorID       int `json:"sensor_id"`
-//}
-//
-//type Test struct {
-//	SensorName  string `json:"sensor_name"`
-//	SensorValue string `json:"sensor_value"`
-//	Unite       string `json:"unite"`
-//}
 
 func (ug *DbGorm) AddDataToDb(entity *SensorDataToDb, room_key string) error {
 
@@ -144,22 +139,20 @@ func (ug *DbGorm) GetAllDatasbyRoomByDate(room int, start string, end string) ([
 	return sensorEvent, nil
 }
 
-func (ug *DbGorm) GetDatasByIdByRoomByDate(room int, sensors int, start string, end string) ([]SensorEventNew, error) {
-	var sensorData []SensorEventNew
+func (ug *DbGorm) GetDatasByIdByRoomByDate(room int, sensors int, dateStartToTime string, dateEndtoTime string) ([]SensorEvents, error) {
+	var sensorEvents []SensorEvents
 
-	//decodedRoom := helpers.DecodeId(strconv.Itoa(room))
-	//decodedRensor := helpers.DecodeId(strconv.Itoa(sensors))
-
-	ug.Db.Table("sensor_events").
-		Select("sensor_events.event_timestamp, sensor_events.sensor_id, sensor_events.event_data, "+
-			"sensors.sensor_name, sensors.sensor_type, sensors.room_id").
+	err := InitGorm.Db.Table("sensor_events").
+		Select("sensor_events.id, event_timestamp, sensor_events.sensor_id, (SELECT jsonb_object_keys(event_data)) AS type, (event_data->>(SELECT jsonb_object_keys(event_data))) AS value").
 		Joins("LEFT JOIN sensors ON sensors.id = sensor_events.sensor_id").
 		Joins("LEFT JOIN rooms ON sensors.room_id = rooms.room_id").
-		Where("rooms.room_id = ? AND sensor_events.sensor_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?",
-			"1", "13", "2023-07-17T00:00:00Z", "2023-07-22T23:59:59Z").
-		Find(&sensorData)
+		Where("rooms.room_id = ? AND sensor_events.sensor_id = ? AND sensor_events.event_timestamp >= ? AND sensor_events.event_timestamp <= ?", room, sensors, dateStartToTime, dateEndtoTime).
+		Find(&sensorEvents).Error
 
-	// Parse the event_data column into the desired struct
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 
-	return sensorData, nil
+	return sensorEvents, nil
 }
