@@ -81,7 +81,6 @@ func setMQTT() MQTT.Client {
 }
 
 func SubscribeTopic(c chan os.Signal) {
-	var data models.SensorDataToDb
 	client := setMQTT()
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		connError <- token.Error()
@@ -90,7 +89,9 @@ func SubscribeTopic(c chan os.Signal) {
 	time.Sleep(time.Second)
 
 	topics := config.Salles
-	fmt.Printf("datetodb:%v", data)
+
+	//time.Sleep(5 * time.Minute)
+
 	for key, value := range topics {
 		for keySensor, valueSensor := range value {
 			request := key + keySensor + valueSensor

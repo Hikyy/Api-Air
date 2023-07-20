@@ -85,7 +85,6 @@ func EncodeId(id int) string {
 	return strconv.FormatUint(newId, 10)
 }
 
-// Refacto this method @Hikyy
 func FillStruct(destination interface{}, source interface{}) {
 	destinationValue := reflect.ValueOf(destination)
 

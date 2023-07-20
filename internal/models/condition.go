@@ -29,3 +29,15 @@ func (ug *DbGorm) GetAllConditions() ([]Conditions, error) {
 
 	return automations, nil
 }
+
+func GetConditions() ([]Conditions, error) {
+	var automations []Conditions
+
+	db := InitGorm.Db.Table("conditions").Order("automation_name").Find(&automations)
+
+	if err := db.Error; err != nil {
+		return nil, err
+	}
+
+	return automations, nil
+}
