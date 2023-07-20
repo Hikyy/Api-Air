@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 func (handler *HandlerService) IndexCondition(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +30,16 @@ func (handler *HandlerService) StoreCondition(w http.ResponseWriter, r *http.Req
 	var condition models.Conditions
 
 	helpers.FillStruct(&condition, form.Data.Attributes)
+
+	strToInt := strconv.FormatInt(int64(condition.SensorId), 10)
+
+	decoded := helpers.DecodeId(strToInt)
+
+	condition.SensorId, _ = strconv.Atoi(decoded)
+
+	id := helpers.DecodeId(strconv.FormatInt(int64(condition.ActuatorId), 10))
+
+	condition.ActuatorId, _ = strconv.Atoi(id)
 
 	if err := handler.use.AddCondition(&condition); err != nil {
 		fmt.Println("err:", err)
