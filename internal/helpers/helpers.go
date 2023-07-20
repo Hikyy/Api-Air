@@ -2,9 +2,11 @@ package helpers
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/schema"
 	"github.com/pjebs/optimus-go"
@@ -25,6 +27,12 @@ func ParseForm(r *http.Request, dst interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func GenerateUniqueID() int64 {
+	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
+	randomNum := rand.Intn(1000)
+	return timestamp * int64(randomNum)
 }
 
 func HashPassword(password string) string {

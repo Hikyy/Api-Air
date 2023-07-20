@@ -102,8 +102,9 @@ CREATE TABLE "actuators"
 (
     id             serial primary key,
     actuator_name  varchar(255) not null,
-    actuator_command varchar(255) not null,
+    actuator_command integer not null,
     data_key       varchar(25)  not null,
+    destination_address varchar(255) not null , 
     room_id        integer,
     constraint "actuators_rooms_room_id_fk" foreign key (room_id) references "rooms"
 );
@@ -170,7 +171,7 @@ create table "actuator_states"
     actuator_id     integer not null
         primary key
         references "actuators",
-    state           jsonb,
+    state           bool,
     last_updated_at timestamp(0) with time zone default CURRENT_TIMESTAMP
 );
 
@@ -327,28 +328,28 @@ VALUES
 INSERT INTO users (firstname, lastname, email, password, group_name)
 VALUES('Admin', 'Admin', 'admin@admin.fr', '$2a$10$hFZcsuSzOOgXNlPLVhY4WOnigHa0FQwVqUl9VG4UyHcYY9sg/faxO', 'administrator');
 
-INSERT INTO actuators(actuator_name, actuator_command, data_key ,room_id)
-VALUES ('HEATER_UP', '201', 'heat', 1),
-       ('HEATER_DOWN', '202', 'heat', 1),
-       ('AC_UP', '203', 'ac', 1),
-       ('AC_DOWN', '204', 'ac', 1),
-       ('VENT_UP', '205', 'vent', 1),
-       ('VENT_DOWN', '206', 'vent', 1),
-       ('LIGHT_ON', '207', 'light', 1),
-       ('LIGHT_OFF', '208', 'light', 1),
-       ('HEATER_UP', '201','heat', 2),
-       ('HEATER_DOWN', '202', 'heat', 2),
-       ('AC_UP', '203', 'ac', 2),
-       ('AC_DOWN', '204', 'ac', 2),
-       ('VENT_UP', '205', 'vent', 2),
-       ('VENT_DOWN', '206', 'vent', 2),
-       ('LIGHT_ON', '207', 'light', 2),
-       ('LIGHT_OFF', '208', 'light', 2),
-       ('HEATER_UP', '201', 'heat', 3),
-       ('HEATER_DOWN', '202', 'heat', 3),
-       ('AC_UP', '203', 'ac', 3),
-       ('AC_DOWN', '204', 'ac', 3),
-       ('VENT_UP', '205', 'vent', 3),
-       ('VENT_DOWN', '206', 'vent', 3),
-       ('LIGHT_ON', '207', 'light', 3),
-       ('LIGHT_OFF', '208', 'light', 3);
+INSERT INTO actuators(actuator_name, actuator_command, data_key , destination_address , room_id)
+VALUES ('HEATER_UP', '201', 'heat', '48edcb72-2940-4764-8a30-f1f266c9a697', 1),
+       ('HEATER_DOWN', '202', 'heat','48edcb72-2940-4764-8a30-f1f266c9a697', 1),
+       ('AC_UP', '203', 'ac','67d02c51-d07c-4588-a3cc-fa1c37e40480', 1),
+       ('AC_DOWN', '204', 'ac','67d02c51-d07c-4588-a3cc-fa1c37e40480', 1),
+       ('VENT_UP', '205', 'vent','d3470761-ebe4-4160-9c8e-0f64d241b57c', 1),
+       ('VENT_DOWN', '206', 'vent','d3470761-ebe4-4160-9c8e-0f64d241b57c', 1),
+       ('LIGHT_ON', '207', 'light','c73b859b-21ac-48b0-82f1-871e69d640a2', 1),
+       ('LIGHT_OFF', '208', 'light','c73b859b-21ac-48b0-82f1-871e69d640a2', 1),
+       ('HEATER_UP', '201','heat','54ecef7c-50a8-491d-9e62-ba61ce1639fa', 2),
+       ('HEATER_DOWN', '202', 'heat','54ecef7c-50a8-491d-9e62-ba61ce1639fa', 2),
+       ('AC_UP', '203', 'ac','a43e9218-379a-4e43-af55-5d66ba493b2e', 2),
+       ('AC_DOWN', '204', 'ac','a43e9218-379a-4e43-af55-5d66ba493b2e', 2),
+       ('VENT_UP', '205', 'vent','c7d34a93-e440-4a11-a745-9d7cb8f93e07', 2),
+       ('VENT_DOWN', '206', 'vent','c7d34a93-e440-4a11-a745-9d7cb8f93e07', 2),
+       ('LIGHT_ON', '207', 'light','3933a900-4f73-4716-9a97-42f5353c9254', 2),
+       ('LIGHT_OFF', '208', 'light','3933a900-4f73-4716-9a97-42f5353c9254', 2),
+       ('HEATER_UP', '201', 'heat','2543e375-1594-404f-b53c-5f3e38642a30', 3),
+       ('HEATER_DOWN', '202', 'heat','2543e375-1594-404f-b53c-5f3e38642a30', 3),
+       ('AC_UP', '203', 'ac','5424f807-56c6-406e-94af-f8ec8562522f', 3),
+       ('AC_DOWN', '204', 'ac','5424f807-56c6-406e-94af-f8ec8562522f', 3),
+       ('VENT_UP', '205', 'vent','cb124d1f-2e5d-4d15-a5f3-846682dded7d', 3),
+       ('VENT_DOWN', '206', 'vent','cb124d1f-2e5d-4d15-a5f3-846682dded7d', 3),
+       ('LIGHT_ON', '207', 'light','db0b2380-acf0-4688-b219-04ad29c369f3', 3),
+       ('LIGHT_OFF', '208', 'light','db0b2380-acf0-4688-b219-04ad29c369f3', 3);

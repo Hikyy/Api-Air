@@ -27,6 +27,7 @@ var MessagePubHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Me
 	var sensorDatatoDb models.SensorDataToDb
 
 	err := json.Unmarshal([]byte(jsonString), &sensorData)
+
 	if err != nil {
 		fmt.Println("Erreur lors de la désérialisation JSON:", err)
 		return
@@ -85,8 +86,8 @@ func SubscribeTopic(c chan os.Signal) {
 		connError <- token.Error()
 		return
 	}
-
 	time.Sleep(time.Second)
+
 	topics := config.Salles
 
 	for key, value := range topics {
@@ -103,33 +104,25 @@ func SubscribeTopic(c chan os.Signal) {
 	<-c
 }
 
-func SendRequest(c chan os.Signal) {
+func SendRequest(c chan os.Signal, jsonData []byte, roomId int) {
 	client := setMQTT()
 	if !client.IsConnected() {
 		fmt.Println("MQTT client is not connected.")
 		return
 	}
 
+	var gatewayId string
+
+	models.InitGorm.Db.Table("rooms").Where("room_id= ?", roomId).Select("room_key").Find(&gatewayId)
+
+	topic := "groupe9/request/" + gatewayId
 	select {
-	case err := <-connError: // Receive error from connError channel
+	case err := <-connError:
 		fmt.Println("Erreur de connexion MQTT: ", err)
 		return
-	case <-connSuccess: // Success received from connSuccess channel
+	case <-connSuccess:
 
-		command := map[string]interface{}{
-			"cmd_id":              102,
-			"destination_address": "db0b2380-acf0-4688-b219-04ad29c369f3",
-			"ack_flags":           0,
-			"cmd_type":            208,
-		}
-
-		jsonData, err := json.Marshal(command)
-		if err != nil {
-			fmt.Println("Erreur lors de la conversion en JSON :", err)
-			return
-		}
-
-		topic := "groupe9/request/5e178fd2-5321-4cf5-b04c-4c6a8a827d88"
+		fmt.Printf("%s", jsonData)
 		token := client.Publish(topic, 0, false, jsonData)
 		token.Wait()
 

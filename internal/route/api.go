@@ -43,6 +43,7 @@ func route(router *chi.Mux, handlerService *handlers.HandlerService) {
 
 		// Route Sensor Event
 		r.Get("/sensor-events", handlerService.IndexSensorEvents)
+		r.Get("/room/sensor-request", handlerService.YourHTTPHandler)
 		r.Get("/room/{id}/sensor-events", handlerService.IndexRoomSensorEvents)
 		r.Get("/room/{id}/sensor-events/{date}", handlerService.IndexRoomSensorEventsByDate)
 		r.Get("/room/{id}/sensor-events/{date-debut}/{date-fin}", handlerService.IndexRoomSensorEventsBetweenTwoDates)

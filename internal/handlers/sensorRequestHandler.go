@@ -2,53 +2,60 @@ package handlers
 
 import (
 	"App/internal/helpers"
+	"App/internal/models"
 	"App/internal/requests"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type SensorRequestToBroker struct {
-	CmdId              int64  `json:"cmd_id"`
+	CmdId              int    `json:"cmd_id"`
 	DestinationAddress string `json:"destination_address"`
 	AckFlags           int    `json:"ack_flags"`
 	CmdType            int    `json:"cmd_type"`
 }
 
-func (handlers *HandlerService) YourHTTPHandler(w http.ResponseWriter, r *http.Request) {
-	// Créez un canal pour recevoir les signaux OS
-	id := chi.URLParam(r, "id")
+func HandleDestinationAdress(w http.ResponseWriter, r *http.Request, sensorRequestToBroker *SensorRequestToBroker, roomID int, Cmdtype int) {
 
+	models.InitGorm.Db.Table("actuators").
+		Where("room_id = ? AND actuator_command = ?", roomID, Cmdtype).
+		Select("destination_address").Find(&sensorRequestToBroker.DestinationAddress)
+
+}
+
+func (handlers *HandlerService) YourHTTPHandler(w http.ResponseWriter, r *http.Request) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	var form requests.SensorRequest
 
-	errPayload := ProcessRequest(&form, r, w)
+	body, err := io.ReadAll(r.Body)
 
-	if errPayload != nil {
-		return
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	var sensorRequestToBroker SensorRequestToBroker
 
-	sensorRequestToBroker.CmdId = helpers.GenerateUniqueID()
-	// sensorRequestToBroker.AckFlags = helpers.GenerateUniqueID()
+	if err = json.Unmarshal(body, &form); err != nil {
+		log.Fatal(err)
+	}
 
-	helpers.FillStruct(&sensorRequestToBroker, form)
+	HandleDestinationAdress(w, r, &sensorRequestToBroker, form.Data.Attributes.RoomID, form.Data.Attributes.CmdType)
+	sensorRequestToBroker.CmdId = int(helpers.GenerateUniqueID())
+	sensorRequestToBroker.AckFlags = 0
+	sensorRequestToBroker.CmdType = form.Data.Attributes.CmdType
 
-	// Appelez la fonction SendRequest avec les arguments requis
-	SendRequest(c, sensorRequestToBroker, id)
-}
+	jsonData, err := json.Marshal(sensorRequestToBroker)
+	if err != nil {
+		fmt.Println("Erreur lors de la conversion en JSON :", err)
+		return
+	}
 
-func HandleSendRequestToSensorForm(w http.ResponseWriter, r *http.Request) map[string]string {
-	data := make(map[string]string)
-
-	data["cmd_id"] = r.URL.Query().Get("cmd_id")
-	data["destination_address"] = r.URL.Query().Get("destination_address")
-	data["ack_flags"] = r.URL.Query().Get("ack_flags")
-	data["cmd_type"] = r.URL.Query().Get("cmd_type")
-	return data
+	SendRequest(c, jsonData, form.Data.Attributes.RoomID)
 }
