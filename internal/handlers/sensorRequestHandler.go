@@ -9,8 +9,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 )
 
 type SensorRequestToBroker struct {
@@ -29,8 +27,6 @@ func HandleDestinationAdress(w http.ResponseWriter, r *http.Request, sensorReque
 }
 
 func (handlers *HandlerService) YourHTTPHandler(w http.ResponseWriter, r *http.Request) {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
 
 	var form requests.SensorRequest
 
@@ -57,5 +53,6 @@ func (handlers *HandlerService) YourHTTPHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	SendRequest(c, jsonData, form.Data.Attributes.RoomID)
+	SendRequest(jsonData, form.Data.Attributes.RoomID)
+
 }
