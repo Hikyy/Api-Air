@@ -106,7 +106,7 @@ func SubscribeTopic(c chan os.Signal) {
 	<-c
 }
 
-func SendRequest(c chan os.Signal, jsonData []byte, roomId int) {
+func SendRequest(jsonData []byte, roomId int) {
 	client := setMQTT()
 	if !client.IsConnected() {
 		fmt.Println("MQTT client is not connected.")
@@ -118,23 +118,16 @@ func SendRequest(c chan os.Signal, jsonData []byte, roomId int) {
 	models.InitGorm.Db.Table("rooms").Where("room_id= ?", roomId).Select("room_key").Find(&gatewayId)
 
 	topic := "groupe9/request/" + gatewayId
-	select {
-	case err := <-connError:
-		fmt.Println("Erreur de connexion MQTT: ", err)
-		return
-	case <-connSuccess:
 
-		fmt.Printf("%s", jsonData)
-		token := client.Publish(topic, 0, false, jsonData)
-		token.Wait()
+	fmt.Printf("%s", jsonData)
+	token := client.Publish(topic, 0, false, jsonData)
+	token.Wait()
 
-		if token.Error() != nil {
-			fmt.Printf("Error sending request to topic %s: %v\n", topic, token.Error())
-		} else {
-			fmt.Printf("Requete envoyée au topic: %s\n", topic)
-		}
+	if token.Error() != nil {
+		fmt.Printf("Error sending request to topic %s: %v\n", topic, token.Error())
+	} else {
+		fmt.Printf("Requete envoyée au topic: %s\n", topic)
 	}
-	<-c
 }
 
 func getSourceAddress(message MQTT.Message) (string, error) {
