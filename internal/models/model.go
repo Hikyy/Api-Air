@@ -53,11 +53,11 @@ type EntityDB interface {
 	GetAllSensorRooms() ([]Rooms, error)
 	GetAllDatasByRoom(room int) ([]SensorEvent, error)
 	GetAllDatasbyRoomByDate(room int, start string, end string) ([]SensorEvent, error)
-	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]SensorEvent, error)
+	GetAllDatasbyRoomBetweenTwoDays(room int, start string, end string) ([]SensorEventData, error)
 	AddCondition(entity interface{}) error
 	GetAllConditions() ([]Conditions, error)
 	GetAllActuators() ([]Actuators, error)
-	GetDatasByIdByRoomByDate(sensor int, room int, start string, end string) ([]SensorDatas, error)
+	GetDatasByIdByRoomByDate(sensor int, room int, dateStartToTime string, dateEndtoTime string) ([]SensorEvents, error)
 }
 
 // EntityImplementService interface qui set les methodes utilisée pour le user model

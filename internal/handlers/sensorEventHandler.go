@@ -3,6 +3,7 @@ package handlers
 import (
 	"App/internal/helpers"
 	"App/internal/resources"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -131,6 +132,8 @@ func (handler *HandlerService) IndexSensorEventsByIdByRoomByDate(w http.Response
 
 	date := r.URL.Query().Get("date")
 
+	fmt.Println(room, sensor, date)
+
 	roomInt, err := helpers.TransformStringToInt(room)
 	if err != nil {
 		return
@@ -159,4 +162,47 @@ func (handler *HandlerService) IndexSensorEventsByIdByRoomByDate(w http.Response
 	var sensorDataFromDate []resources.SensorDataFromDate
 	resources.GenerateResource(&sensorDataFromDate, data, w)
 
+}
+
+func (handler *HandlerService) IndexSensorEventsByIdByRoomBetweenTwoDate(w http.ResponseWriter, r *http.Request) {
+
+	room := r.URL.Query().Get("room_id")
+	sensor := r.URL.Query().Get("sensor_id")
+	dateStart := r.URL.Query().Get("start_date")
+	dateEnd := r.URL.Query().Get("end_date")
+
+	room = helpers.DecodeId(room)
+
+	sensor = helpers.DecodeId(sensor)
+
+	roomInt, err := helpers.TransformStringToInt(room)
+	if err != nil {
+		return
+	}
+
+	sensorInt, err := helpers.TransformStringToInt(sensor)
+	if err != nil {
+		return
+	}
+
+	dateStartToTime, err := helpers.ConvertStringToStartOfDay(dateStart)
+	if err != nil {
+		return
+	}
+
+	dateEndtoTime, err := helpers.ConvertStringToEndOfDay(dateEnd)
+	if err != nil {
+		return
+	}
+
+	sensorDataFromDate, err := handler.use.GetDatasByIdByRoomByDate(roomInt, sensorInt, dateStartToTime, dateEndtoTime)
+	if err != nil {
+		return
+	}
+
+	resource := resources.GenerateResourceSensorRoom(sensorDataFromDate, w)
+
+	respJson, _ := json.Marshal(resource)
+
+	w.Write(respJson)
 }
