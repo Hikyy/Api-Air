@@ -44,9 +44,9 @@ func (handlers *HandlerService) YourHTTPHandler(w http.ResponseWriter, r *http.R
 	}
 
 	form.Data.Attributes.RoomID, _ = strconv.Atoi(helpers.DecodeId(strconv.Itoa(form.Data.Attributes.RoomID)))
-	
+
 	HandleDestinationAdress(w, r, &sensorRequestToBroker, form.Data.Attributes.RoomID, form.Data.Attributes.CmdType)
-	
+
 	sensorRequestToBroker.CmdId = int(helpers.GenerateUniqueID())
 	sensorRequestToBroker.AckFlags = 0
 	sensorRequestToBroker.CmdType = form.Data.Attributes.CmdType

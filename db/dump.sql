@@ -100,15 +100,16 @@ alter table "sensors"
 
 CREATE TABLE "actuators"
 (
-    id             serial primary key,
-    actuator_name  varchar(255) not null,
-    actuator_command integer not null,
-    data_key       varchar(25)  not null,
-    destination_address varchar(255) not null , 
-    room_id        integer,
-    constraint "actuators_rooms_room_id_fk" foreign key (room_id) references "rooms"
+    id                serial primary key,
+    actuator_name     varchar(255) not null,
+    actuator_command  integer not null,
+    data_key          varchar(25)  not null,
+    destination_address varchar(255) not null ,
+    room_id           integer not null,
+    sensor_id         integer not null,
+    constraint "actuators_rooms_room_id_fk" foreign key (room_id) references "rooms" (room_id),
+    constraint "actuators_sensors_sensor_id_fk" foreign key (sensor_id) references "sensors" (id)
 );
-
 
 alter table "actuators"
     owner to postgres;
@@ -328,28 +329,28 @@ VALUES
 INSERT INTO users (firstname, lastname, email, password, group_name)
 VALUES('Admin', 'Admin', 'admin@admin.fr', '$2a$10$hFZcsuSzOOgXNlPLVhY4WOnigHa0FQwVqUl9VG4UyHcYY9sg/faxO', 'administrator');
 
-INSERT INTO actuators(actuator_name, actuator_command, data_key , destination_address , room_id)
-VALUES ('HEATER_UP', '201', 'heat', '48edcb72-2940-4764-8a30-f1f266c9a697', 1),
-       ('HEATER_DOWN', '202', 'heat','48edcb72-2940-4764-8a30-f1f266c9a697', 1),
-       ('AC_UP', '203', 'ac','67d02c51-d07c-4588-a3cc-fa1c37e40480', 1),
-       ('AC_DOWN', '204', 'ac','67d02c51-d07c-4588-a3cc-fa1c37e40480', 1),
-       ('VENT_UP', '205', 'vent','d3470761-ebe4-4160-9c8e-0f64d241b57c', 1),
-       ('VENT_DOWN', '206', 'vent','d3470761-ebe4-4160-9c8e-0f64d241b57c', 1),
-       ('LIGHT_ON', '207', 'light','c73b859b-21ac-48b0-82f1-871e69d640a2', 1),
-       ('LIGHT_OFF', '208', 'light','c73b859b-21ac-48b0-82f1-871e69d640a2', 1),
-       ('HEATER_UP', '201','heat','54ecef7c-50a8-491d-9e62-ba61ce1639fa', 2),
-       ('HEATER_DOWN', '202', 'heat','54ecef7c-50a8-491d-9e62-ba61ce1639fa', 2),
-       ('AC_UP', '203', 'ac','a43e9218-379a-4e43-af55-5d66ba493b2e', 2),
-       ('AC_DOWN', '204', 'ac','a43e9218-379a-4e43-af55-5d66ba493b2e', 2),
-       ('VENT_UP', '205', 'vent','c7d34a93-e440-4a11-a745-9d7cb8f93e07', 2),
-       ('VENT_DOWN', '206', 'vent','c7d34a93-e440-4a11-a745-9d7cb8f93e07', 2),
-       ('LIGHT_ON', '207', 'light','3933a900-4f73-4716-9a97-42f5353c9254', 2),
-       ('LIGHT_OFF', '208', 'light','3933a900-4f73-4716-9a97-42f5353c9254', 2),
-       ('HEATER_UP', '201', 'heat','2543e375-1594-404f-b53c-5f3e38642a30', 3),
-       ('HEATER_DOWN', '202', 'heat','2543e375-1594-404f-b53c-5f3e38642a30', 3),
-       ('AC_UP', '203', 'ac','5424f807-56c6-406e-94af-f8ec8562522f', 3),
-       ('AC_DOWN', '204', 'ac','5424f807-56c6-406e-94af-f8ec8562522f', 3),
-       ('VENT_UP', '205', 'vent','cb124d1f-2e5d-4d15-a5f3-846682dded7d', 3),
-       ('VENT_DOWN', '206', 'vent','cb124d1f-2e5d-4d15-a5f3-846682dded7d', 3),
-       ('LIGHT_ON', '207', 'light','db0b2380-acf0-4688-b219-04ad29c369f3', 3),
-       ('LIGHT_OFF', '208', 'light','db0b2380-acf0-4688-b219-04ad29c369f3', 3);
+       INSERT INTO actuators(actuator_name, actuator_command, data_key , destination_address , room_id, sensor_id) 
+VALUES ('HEATER_UP', '201', 'heat', '48edcb72-2940-4764-8a30-f1f266c9a697', 1 , 7),
+       ('HEATER_DOWN', '202', 'heat','48edcb72-2940-4764-8a30-f1f266c9a697', 1 , 7),
+       ('AC_UP', '203', 'ac','67d02c51-d07c-4588-a3cc-fa1c37e40480', 1, 1 ),
+       ('AC_DOWN', '204', 'ac','67d02c51-d07c-4588-a3cc-fa1c37e40480', 1, 1),
+       ('VENT_UP', '205', 'vent','d3470761-ebe4-4160-9c8e-0f64d241b57c', 1 , 11),
+       ('VENT_DOWN', '206', 'vent','d3470761-ebe4-4160-9c8e-0f64d241b57c', 1 ,11),
+       ('LIGHT_ON', '207', 'light','c73b859b-21ac-48b0-82f1-871e69d640a2', 1 , 14),
+       ('LIGHT_OFF', '208', 'light','c73b859b-21ac-48b0-82f1-871e69d640a2', 1 , 14),
+       ('HEATER_UP', '201','heat','54ecef7c-50a8-491d-9e62-ba61ce1639fa', 2 , 21),
+       ('HEATER_DOWN', '202', 'heat','54ecef7c-50a8-491d-9e62-ba61ce1639fa', 2 , 21 ),
+       ('AC_UP', '203', 'ac','a43e9218-379a-4e43-af55-5d66ba493b2e', 2 , 15),
+       ('AC_DOWN', '204', 'ac','a43e9218-379a-4e43-af55-5d66ba493b2e', 2 , 15),
+       ('VENT_UP', '205', 'vent','c7d34a93-e440-4a11-a745-9d7cb8f93e07', 2 , 25),
+       ('VENT_DOWN', '206', 'vent','c7d34a93-e440-4a11-a745-9d7cb8f93e07', 2 , 25),
+       ('LIGHT_ON', '207', 'light','3933a900-4f73-4716-9a97-42f5353c9254', 2 , 28),
+       ('LIGHT_OFF', '208', 'light','3933a900-4f73-4716-9a97-42f5353c9254', 2 , 28),
+       ('HEATER_UP', '201', 'heat','2543e375-1594-404f-b53c-5f3e38642a30', 3 , 35),
+       ('HEATER_DOWN', '202', 'heat','2543e375-1594-404f-b53c-5f3e38642a30', 3 , 35),
+       ('AC_UP', '203', 'ac','5424f807-56c6-406e-94af-f8ec8562522f', 3 , 29),
+       ('AC_DOWN', '204', 'ac','5424f807-56c6-406e-94af-f8ec8562522f', 3 , 29),
+       ('VENT_UP', '205', 'vent','cb124d1f-2e5d-4d15-a5f3-846682dded7d', 3 , 39),
+       ('VENT_DOWN', '206', 'vent','cb124d1f-2e5d-4d15-a5f3-846682dded7d', 3 , 39),
+       ('LIGHT_ON', '207', 'light','db0b2380-acf0-4688-b219-04ad29c369f3', 3 , 42),
+       ('LIGHT_OFF', '208', 'light','db0b2380-acf0-4688-b219-04ad29c369f3', 3 , 42);
